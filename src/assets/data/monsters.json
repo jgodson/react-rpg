@@ -1,0 +1,22 @@
+[
+  {
+    "id": 10000,
+    "name": "Slime",
+    "difficulty": 1,
+    "stats": {
+      "level": [1,2],
+      "strength": [1,2],
+      "vitality": [1,2],
+      "dexterity": [1,2],
+      "agility": [1],
+      "magic": [1],
+      "defence": [0]
+    },
+    "rewards": {
+      "gold": [7,9],
+      "exp": [12,16],
+      "items": [10000],
+      "itemChance": [1,5]
+    }
+  }
+]

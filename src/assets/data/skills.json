@@ -1,0 +1,28 @@
+[
+  {
+    "id": 10000,
+    "name": "Heavy Attack",
+    "cost": 5,
+    "required": {
+      "strength": 6
+    },
+    "attributes": {
+      "vitals": {
+        "health": -15
+      }
+    }
+  },
+  {
+    "id": 10001,
+    "name": "Quick Attack",
+    "cost": 3,
+    "required": {
+      "dexterity": 6
+    },
+    "attributes": {
+      "vitals": {
+        "health": -10
+      }
+    }
+  }
+]

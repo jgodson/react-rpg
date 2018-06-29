@@ -1,0 +1,21 @@
+{
+  "strength": {
+    "attack": 3,
+    "health": 5
+  },
+  "vitality": {
+    "health": 10
+  },
+  "dexterity": {
+    "attack": 3,
+    "health": 5,
+    "mana": 1
+  },
+  "agility": {
+    "health": 3,
+    "mana": 1
+  },
+  "magic": {
+    "mana": 5
+  }
+}

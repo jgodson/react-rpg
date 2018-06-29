@@ -1,0 +1,49 @@
+.Button {
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 3px;
+  color: var(--lighter);
+  font-weight: bold;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: 100ms ease-in-out;
+}
+
+.Button:not(.primary):not(.secondary):not(.destructive):hover {
+  color: var(--light);
+}
+
+.Button.primary {
+  background: var(--primary);
+}
+
+.Button.primary:hover {
+  background: var(--primary-hover);
+}
+
+.Button.secondary {
+  background: var(--secondary);
+}
+
+.Button.secondary:hover {
+  background: var(--secondary-hover);
+}
+
+.Button.destructive {
+  background: var(--destructive);
+}
+
+.Button.destructive:hover {
+  background: var(--destructive-hover);
+}
+
+.Button:disabled {
+  background: var(--disabled-state);
+  cursor: not-allowed;
+}
+
+.Button:disabled:hover {
+  background: var(--disabled-state);
+}

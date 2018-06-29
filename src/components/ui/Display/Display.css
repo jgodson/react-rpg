@@ -1,0 +1,6 @@
+.Display {
+  flex: 2 0 0;
+  min-width: 300px;
+  max-width: 800px;
+  height: 400px;
+}

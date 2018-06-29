@@ -1,0 +1,28 @@
+[
+  {
+    "id": 10000,
+    "name": "Heal",
+    "cost": 10,
+    "required": {
+      "magic": 6
+    },
+    "attributes": {
+      "vitals": {
+        "health": 15
+      }
+    }
+  },
+  {
+    "id": 10001,
+    "name": "Fireball",
+    "cost": 5,
+    "required": {
+      "magic": 6
+    },
+    "attributes": {
+      "vitals": {
+        "health": -8
+      }
+    }
+  }
+]

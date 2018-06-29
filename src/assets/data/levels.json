@@ -1,0 +1,19 @@
+[
+  {
+    "id": 10000,
+    "name": "Level 1",
+    "size": {
+      "x": 400,
+      "y": 200
+    },
+    "monsters": {
+      "count": 40,
+      "difficulty": [1]
+    },
+    "items": {
+      "count": 10,
+      "level": [1],
+      "types": ["items", "weapons"]
+    }
+  }
+]

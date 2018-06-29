@@ -1,0 +1,48 @@
+@import "colors.css";
+
+@font-face {
+  font-family: 'Cup And Talon';
+  src: url('./assets/fonts/Cup\ and\ Talon.ttf'); /* IE9 Compat Modes */
+}
+
+#root {
+  height: 100%;
+  background-size: cover;
+}
+
+section {
+  border: 1px solid black;
+  box-sizing: border-box;
+  background: rgba(196, 196, 196, 0.7);
+}
+
+section h3 {
+  margin: 5px;
+  align-self: flex-start;
+}
+
+/* To make sure that it can scroll on mobile when everything wraps */
+@media screen and (min-width: 635px) {
+  #root {
+    height: 100vh;
+  }
+}
+
+@media screen and (max-width: 634px) {
+  /* Make sure each section is full width once wrapped */
+  section {
+    min-width: 100% !important;
+  }
+
+  /* Make the map closer to the actions & vitals on small screens */
+  .Display {
+    order: 2;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Cup And Talon';
+  font-size: 1.5rem;
+}

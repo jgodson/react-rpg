@@ -1,0 +1,19 @@
+.Stats {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0;
+  min-width: 300px;
+  max-width: 400px;
+  height: 400px;
+}
+
+.Stats .title-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.Stats tr {
+  height: 42px;
+}

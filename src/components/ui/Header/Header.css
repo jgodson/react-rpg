@@ -1,0 +1,18 @@
+.Header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--dark);
+  height: 75px;
+  color: white;
+}
+
+.Header .title {
+  font-size: 1.5em;
+  margin: 0;
+}
+
+.Header button {
+  position: absolute;
+  right: 10px;
+}

@@ -1,0 +1,15 @@
+[
+  {
+    "id": 10000,
+    "name": "Healing Potion",
+    "rarity": 1,
+    "type": "potion",
+    "description": "Heals a small amount of health",
+    "price": [25,50],
+    "attributes": {
+      "vitals": {
+        "health": 250
+      }
+    }
+  }
+]
