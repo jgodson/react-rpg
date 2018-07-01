@@ -1,19 +1,25 @@
 [
   {
     "id": 10000,
-    "name": "Level 1",
+    "name": "Cave Level 1",
+    "type": "dungeon",
     "size": {
       "x": 400,
       "y": 200
     },
     "monsters": {
       "count": 40,
-      "difficulty": [1]
+      "maxDifficulty": 1,
+      "collections": ["basic"]
     },
-    "items": {
+    "treasures": {
       "count": 10,
       "level": [1],
+      "percentItems": 20,
       "types": ["items", "weapons"]
+    },
+    "assetInfo": {
+      "battleBg": "cave"
     }
   }
 ]

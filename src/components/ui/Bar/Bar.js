@@ -36,12 +36,11 @@ export default function Bar(props) {
   ].filter((str) => str).join(' ');
 
   const background = percentage > 70 || alwaysShowGradient ? `linear-gradient(to right, ${lowColor || highColor}, ${highColor || lowColor} 25%)` : highColor || lowColor;
-
   return (
     <div className="Bar">
       <div className="info">
         {label && <label>{label}</label>}
-        {showStatus && !isMaxedOut ? <span>{current}/{max}</span> : <span>Max</span>}
+        {showStatus && (!isMaxedOut ? <span>{current}/{max}</span> : <span>Max</span>)}
       </div>
       <div 
         className={progressBarClasses}

@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: 'Cup And Talon';
-  src: url('./assets/fonts/Cup\ and\ Talon.ttf'); /* IE9 Compat Modes */
+  src: url('./assets/fonts/Cup\ and\ Talon.ttf') format('truetype');
 }
 
 #root {

@@ -7,6 +7,7 @@ import './ActionList.css';
 export default function ActionList(props) {
   const {
     availableActions,
+    disabled,
   } = props;
 
   return (
@@ -20,7 +21,7 @@ export default function ActionList(props) {
               primary={!action.secondary}
               secondary={action.secondary}
               destructive={action.destructive}
-              disabled={action.disabled}
+              disabled={disabled || action.disabled}
               onClick={action.onClick}
             >
               {action.name}
@@ -34,4 +35,5 @@ export default function ActionList(props) {
 
 ActionList.propTypes = {
   availableActions: PropTypes.arrayOf(PropTypes.object).isRequired,
+  disabled: PropTypes.bool,
 }

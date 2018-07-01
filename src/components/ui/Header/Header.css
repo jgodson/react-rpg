@@ -1,15 +1,22 @@
 .Header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background-color: var(--dark);
   height: 75px;
   color: white;
 }
 
 .Header .title {
-  font-size: 1.5em;
-  margin: 0;
+  font-size: 2rem;
+  margin: 3px 0 0 10px;
+}
+
+@media screen and (min-width: 635px) {
+  .Header {
+    justify-content: center;
+    margin: 3px 0 0 0;
+  }
 }
 
 .Header button {

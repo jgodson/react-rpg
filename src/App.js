@@ -7,7 +7,8 @@ import {
 import gameMusic from './assets/music';
 import gameBackgrounds from './assets/backgrounds';
 import gameSounds from './assets/sounds';
-import baseHero from './assets/data/baseStats';
+import baseHeroStats from './assets/data/baseStats';
+import heroLevels from './assets/data/heroLevels';
 import './App.css';
 
 export default class App extends React.Component {
@@ -37,18 +38,29 @@ export default class App extends React.Component {
       this.setState({gameData: saveData, hasSaveData: true});
     } else {
       this.setState({
-        gameData: {
-          gameState: 'town',
-          level: {
-            x: 0,
-            y: 0,
-          },
-          inventory: {},
-          hero: baseHero,
-          monster: {},
-        },
-      })
+        gameData: this.freshGameState(),
+      });
     }
+  }
+
+  freshGameState = () => {
+    return {
+      gameState: 'town',
+      location: {
+        x: 0,
+        y: 0,
+      },
+      inventory: {},
+      hero: {
+        ...baseHeroStats,
+        stats: {
+          ...baseHeroStats.stats,
+          nextExpLevel: heroLevels[1].requiredExp,
+          statPoints: heroLevels[1].points,
+        }
+      },
+      monster: {},
+    };
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -112,16 +124,7 @@ export default class App extends React.Component {
   gameStart = (newGame) => {
     if (newGame) {
       this.setState({
-        gameData: {
-          gameState: 'town',
-          level: {
-            x: 0,
-            y: 0,
-          },
-          inventory: [],
-          hero: baseHero,
-          monster: {},
-        },
+        gameData: this.freshGameState(),
         inProgress: true,
         hasSaveData: false,
         musicName: 'townMusic',

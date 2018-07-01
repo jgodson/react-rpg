@@ -4,6 +4,7 @@
     "name": "Healing Potion",
     "rarity": 1,
     "type": "potion",
+    "collections": ["useInBattle", "buyInStore", "basicNeeds"],
     "description": "Heals a small amount of health",
     "price": [25,50],
     "attributes": {

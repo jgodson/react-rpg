@@ -9,6 +9,9 @@ import Bar from './Bar/Bar';
 import Vitals from './Vitals/Vitals';
 import ActionList from './ActionList/ActionList';
 import MainMenu from './MainMenu/MainMenu';
+import BattleStage from './BattleStage/BattleStage';
+import DungeonStage from './DungeonStage/DungeonStage';
+import Character from './Character/Character';
 
 export {
   LoadingIcon,
@@ -22,4 +25,7 @@ export {
   Bar,
   ActionList,
   MainMenu,
+  BattleStage,
+  DungeonStage,
+  Character,
 }

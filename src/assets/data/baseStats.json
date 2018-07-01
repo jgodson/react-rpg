@@ -10,9 +10,7 @@
     "health": 100,
     "mana": 0,
     "attack": 0,
-    "defence": 0,
-    "nextExpLevel": 190,
-    "statPoints": 10
+    "defence": 0
   },
   "vitals": {
     "exp": 0

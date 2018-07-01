@@ -9,6 +9,10 @@ import {
 } from '../../ui'
 import heroLevels from '../../../assets/data/heroLevels';
 import statsMap from '../../../assets/data/statsMap';
+import levelData from '../../../assets/data/levels';
+import barColors from '../../../helpers/barColors';
+import allMonsters from '../../../assets/data/monsters';
+import allItems from '../../../assets/data/items';
 import './Game.css';
 
 export default class Game extends React.Component {
@@ -21,6 +25,9 @@ export default class Game extends React.Component {
       const attack = this.calculateAttack(gameData.hero.stats);
       this.state = {
         ...gameData,
+        level: {},
+        monstersInLevel: [],
+        treasuresInLevel: [],
         hero: {
           ...gameData.hero,
           new: false,
@@ -35,6 +42,11 @@ export default class Game extends React.Component {
             health: gameData.hero.stats.health + health,
             mana,
           },
+          skills: [],
+          magic: [],
+          assetInfo: {
+            image: 'knight',
+          },
         },
       };
     } else {
@@ -46,6 +58,22 @@ export default class Game extends React.Component {
     if (this.state.gameState !== prevState.gameState) {
       this.props.changeLocation(this.state.gameState);
     }
+  }
+
+  transitionToLevel = (nameOrId) => {
+    let level = null;
+    if (typeof nameOrId === 'number') {
+      level = levelData.find((level) => level.id === nameOrId);
+    } else {
+      level = levelData.find((level) => level.name === nameOrId);
+    }
+    const monstersInLevel = this.getMonstersForCurrentLevel(level);
+    
+    this.setState({
+      level,
+      monstersInLevel,
+      gameState: level ? level.type : this.state.gameState,
+    });
   }
 
   getVitals = (character) => this.state[character]['vitals'];
@@ -146,15 +174,14 @@ export default class Game extends React.Component {
 
   }
 
-  heroAttack = (name = 'hero') => {
-
+  setActionsAvailable = (character, available) => {
+    this.setState({
+      [character]: {
+        ...this.state[character],
+        actionsDisabled: !available,
+      },
+    });
   }
-
-  monsterAttack = (name = 'monster') => {
-
-  }
-
-  checkIfSuccessful = (percentChance) => Math.random() * 100 < percentChance
 
   changeStats = (changes) => {
     let newState = this.state;
@@ -187,32 +214,98 @@ export default class Game extends React.Component {
     this.setState(newState);
   }
 
-  calculateDamage = (baseAttack, baseDefence = 0, multiplier = 1) => {
-    const randomizer = Math.max(Math.random() * 100, 80) / 100;
-    const randomizer2 = Math.max(Math.random() * 100, 70) / 100;
-    return Math.floor((baseAttack * randomizer * multiplier) - (baseDefence * randomizer2));
+  // Return an array of the right amount, and difficulty, of monsters for the current level
+  getMonstersForCurrentLevel = (level) => {
+    const { maxDifficulty, collections, count } = level.monsters;
+    let monsters = allMonsters.filter((monster) => {
+      return monster.difficulty <= maxDifficulty && collections.every((col) => monster.collections.includes(col));
+    });
+
+    // Duplciate the monsters available until we have enough monsters for the level
+    while (monsters.length < count) {
+      const spliceCount = count - monsters.length;
+      monsters = monsters.concat(monsters.slice(0, spliceCount));
+    }
+
+    monsters = monsters.length > count 
+      ? monsters.slice(0, count - monsters.length)
+      : monsters;
+
+    return this.populateMonsterData(monsters);
   }
 
-  getMonster = () => {
+  // Generates a monster object based on a given monster
+  populateMonsterData = (monsters) => {
+    return monsters.map((monsterSchema) => {
+      const stats = {};
+      const rewards = {};
+      Object.entries(monsterSchema.stats).map(([stat, minMax]) => {
+        stats[stat] = generateStat(minMax);
+      });
+      const {health, mana} = this.calculateVitals(stats);
+      const attack = this.calculateAttack(stats);
+      Object.entries(monsterSchema.rewards).map(([rewardName, reward]) => {
+        if (reward === 'items') {
+          rewards[rewardName] = reward;
+        }
+        const [min, max] = reward;
+        rewards[rewardName] = generateStat(reward);
+      });
 
+      return {
+        ...monsterSchema,
+        stats: {
+          ...stats,
+          health,
+          mana,
+          attack,
+        },
+        vitals: {
+          health,
+          mana,
+        },
+        rewards: {
+          ...rewards,
+        }
+      };
+    });
+
+    function generateStat([min, max]) {
+      if (!max) { return min; }
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+  }
+
+  // TODO: This should get random treasures for the current level
+  getTreasuresForCurrentLevel = () => {
+
+  }
+  
+  // TODO: This should generate the level based on the level data
+  generateCurrentLevel = () => {
+
+  }
+
+  // Start a fight with the monster that was touche
+  startFight = (monster) => {
+    // TODO: Remove when can start fights by touching enemies
+    const monstersAvailable = this.state.monstersInLevel;
+    if (!monster) {
+      monster = this.state.monstersInLevel.pop();
+    }
+
+    this.setState({
+      gameState: 'combat',
+      monster,
+      hero: {
+        ...this.state.hero,
+        actionsDisabled: true,
+      },
+      monstersInLevel: monstersAvailable,
+    });
   }
 
   render() {
-    /* Colors for health and mana bars */
-    const barColors = {
-      health: {
-        low: '#f47142',
-        high: '#7af441'
-      },
-      mana: {
-        low: '#f47142',
-        high: '#41acf4'
-      },
-      exp: {
-        color: '#ede436',
-      }
-    }
-
     const {
       hero,
       monster,
@@ -223,7 +316,6 @@ export default class Game extends React.Component {
     const {
       showMenu,
       saveGame,
-      playSoundEffect,
     } = this.props;
 
     /* Available Actions */
@@ -232,55 +324,42 @@ export default class Game extends React.Component {
         {name: 'Attack', destructive: true},
         {name: 'Magic', destructive: true, disabled: true},
         {name: 'Item', secondary: true, disabled: true},
-        {name: 'Take Damage' , onClick: () => {
-          const criticalMult = Math.random() > 0.05 ? 1 : 5;
-          const damage = -(this.calculateDamage(25, 1, criticalMult));
-          this.changeVitals('hero', {health: damage});
-        }},
-        {name: 'Gain Experience' , onClick: () => {
-          const experience = Math.floor(Math.random() * 50);
-          this.changeVitals('hero', {exp: experience});
-        }},
-        {name: 'Use Mana' , onClick: () => {
-          const amount = -(Math.floor(Math.random() * 10));
-          this.changeVitals('hero', {mana: amount});
-        }},
-        {name: 'Run', secondary: true, onClick: () => { this.setState({gameState: 'dungeon'}) }},
+        {name: 'Run', secondary: true, onClick: () => this.setState({gameState: 'dungeon'}) },
       ],
       dungeon: [
         {name: 'Inventory', disabled: true},
-        {name: 'Enter combat', destructive: true, onClick: () => { this.setState({gameState: 'combat'}) }},
-        {name: 'Go to town', secondary: true, onClick: () => { this.setState({gameState: 'town'}) }},
+        {name: 'Enter combat', destructive: true, onClick: () => this.startFight() },
+        {name: 'Go to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
       town: [
-        {name: 'Inn', onClick: () => { this.setState({gameState: 'inn'}) }},
-        {name: 'Blacksmith', onClick: () => { this.setState({gameState: 'blacksmith'}) }},
-        {name: 'Training Grounds', onClick: () => { this.setState({gameState: 'training'}) }},
-        {name: 'General Store', onClick: () => { this.setState({gameState: 'generalStore'}) }},
+        {name: 'Inn', onClick: () => this.setState({gameState: 'inn'}) },
+        {name: 'Blacksmith', onClick: () => this.setState({gameState: 'blacksmith'}) },
+        {name: 'Training Grounds', onClick: () => this.setState({gameState: 'training'}) },
+        {name: 'General Store', onClick: () => this.setState({gameState: 'generalStore'}) },
         {name: 'Save Game', secondary: true, onClick: () => saveGame('savegame', this.state)},
         {name: 'Main Menu', destructive: true, onClick: () => showMenu(this.state) },
-        {name: 'Go to dungeon', secondary: true, onClick: () => { this.setState({gameState: 'dungeon'}) }},
+        {name: 'Go to dungeon', secondary: true, onClick: () => this.transitionToLevel("Cave Level 1")},
       ],
       blacksmith: [
         {name: 'Buy', disabled: true},
         {name: 'Sell', disabled: true},
         {name: 'Enhance', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => { this.setState({gameState: 'town'}) }},
+        {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
       training: [
         {name: 'Train Skills', disabled: true},
         {name: 'Train Magic', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => { this.setState({gameState: 'town'}) }},
+        {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
       generalStore: [
         {name: 'Buy', disabled: true},
         {name: 'Sell', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => { this.setState({gameState: 'town'}) }},
+        {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
       inn: [
         {name: 'Rest', disabled: true},
         {name: 'Quests', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => { this.setState({gameState: 'town'}) }},
+        {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
     }
 
@@ -289,11 +368,18 @@ export default class Game extends React.Component {
     return (
       <main className="Main">
         <FlexRow>
-          <Display gameState={this.state} />
+          <Display 
+            game={this.state}
+            transitionToLevel={this.transitionToLevel}
+            changeStats={this.changeStats}
+            monsterDie={this.monsterDie}
+            heroDie={this.heroDie}
+            setActionsAvailable={this.setActionsAvailable}
+          />
           <Stats allStats={hero.stats} changeStats={this.changeStats} />
         </FlexRow>
         <FlexRow>
-          <ActionList availableActions={availableActions}/>
+          <ActionList availableActions={availableActions} disabled={this.state.hero.actionsDisabled} />
           <Vitals>
             <Bar
               label="Health"
