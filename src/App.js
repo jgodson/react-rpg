@@ -9,7 +9,6 @@ import gameBackgrounds from './assets/backgrounds';
 import gameSounds from './assets/sounds';
 import baseHeroStats from './assets/data/baseStats';
 import heroLevels from './assets/data/heroLevels';
-import './App.css';
 
 export default class App extends React.Component {
   constructor() {
@@ -50,7 +49,9 @@ export default class App extends React.Component {
         x: 0,
         y: 0,
       },
-      inventory: {},
+      inventory: {
+        gold: 0,
+      },
       hero: {
         ...baseHeroStats,
         stats: {
@@ -82,23 +83,51 @@ export default class App extends React.Component {
   }
 
   toggleMusic = () => {
-    if (this.bgAudio.current.paused) {
-      this.bgAudio.current.play();
+    const audio = this.bgAudio.current;
+    if (audio.paused) {
+      audio.play();
     } else {
-      this.bgAudio.current.pause();
+      audio.pause();
     }
     this.setState({ bgPlay: !this.state.bgPlay });
   }
 
-  playSoundEffect = (name) => {
-    const soundName = `${name}Sound`;
+  setBgMusic = (name, delay) => {
     if (!this.state.bgPlay) { return; }
+    const musicName = `${name}Music`;
+
+    if (!gameMusic[musicName]) {
+      console.error(`Missing music for ${musicName}`);
+      return;
+    }
+
+    this.bgAudio.current.src = gameMusic[musicName];
+    if (delay) {
+      setTimeout(() => {
+        this.bgAudio.current.play()
+      }, delay);
+    } else {
+      this.bgAudio.current.play();
+    }
+  }
+
+  playSoundEffect = (name, delay) => {
+    if (!this.state.bgPlay) { return; }
+    const soundName = `${name}Sound`;
+
     if (!gameSounds[soundName]) {
       console.error(`Missing sound for ${soundName}`);
       return;
     }
+
     this.sfxAudio.current.src = gameSounds[soundName];
-    this.sfxAudio.current.play();
+    if (delay) {
+      setTimeout(() => {
+        this.sfxAudio.current.play()
+      }, delay);
+    } else {
+      this.sfxAudio.current.play();
+    }
   }
 
   changeLocation = (name) => {
@@ -122,6 +151,10 @@ export default class App extends React.Component {
   }
 
   gameStart = (newGame) => {
+    // Start the music (for Safari)
+    if (this.state.bgPlay) {
+      this.bgAudio.current.play();
+    }
     if (newGame) {
       this.setState({
         gameData: this.freshGameState(),
@@ -161,6 +194,7 @@ export default class App extends React.Component {
             saveGame={this.saveData}
             changeLocation={this.changeLocation}
             playSoundEffect={this.playSoundEffect}
+            setBgMusic={this.setBgMusic}
           />
         :
           <MainMenu 

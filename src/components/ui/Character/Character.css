@@ -1,0 +1,53 @@
+.Character {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 1000ms ease-in-out, visibility 0ms linear 1000ms;
+}
+
+.Character.isDead {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.Character .number {
+  position: relative;
+  text-align: center;
+  height: 40px;
+  top: 60px;
+  font-size: 0.1rem;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 1;
+  transition: all 200ms ease-in-out, visibility 0ms linear;
+}
+
+.Character .number.damage,
+.Character .number.heal {
+  font-size: 2.5rem;
+  opacity: 1;
+  visibility: visible;
+}
+
+.Character .number.damage {
+  color: var(--damage-number);
+}
+
+.Character .number.heal {
+  color: var(--heal-number);
+}
+
+.Character img {
+  width: 100%;
+}
+
+.Character .Bar {
+  width: 50%;
+  margin: auto;
+}
+
+@media screen and (min-width: 400px) {
+  .Character {
+    width: 200px;
+  }
+}

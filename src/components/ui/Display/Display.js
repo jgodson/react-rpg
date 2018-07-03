@@ -28,8 +28,12 @@ export default function Display(props) {
 Display.propTypes = {
   game: PropTypes.object.isRequired,
   transitionToLevel: PropTypes.func.isRequired,
-  changeStats: PropTypes.func.isRequired,
+  changeVitals: PropTypes.func.isRequired,
   monsterDie: PropTypes.func.isRequired,
   heroDie: PropTypes.func.isRequired,
   setActionsAvailable: PropTypes.func.isRequired,
+  acknowledgeRewards: PropTypes.func.isRequired,
+  heroWasReset: PropTypes.func.isRequired,
+  setBgMusic: PropTypes.func.isRequired,
+  playSoundEffect: PropTypes.func.isRequired,
 };

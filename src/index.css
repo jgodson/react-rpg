@@ -6,7 +6,6 @@
 }
 
 #root {
-  height: 100%;
   background-size: cover;
 }
 
@@ -24,7 +23,7 @@ section h3 {
 /* To make sure that it can scroll on mobile when everything wraps */
 @media screen and (min-width: 635px) {
   #root {
-    height: 100vh;
+    min-height: 100vh;
   }
 }
 

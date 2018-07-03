@@ -3,7 +3,7 @@ import Stat from './Stat/Stat';
 import './Stats.css';
 
 export default function Stats(props) {
-  const { allStats, changeStats } = props;
+  const { allStats, changeStats, disableChange } = props;
 
   // Rename stats
   const statNames = {}
@@ -45,7 +45,7 @@ export default function Stats(props) {
                 name={statName}
                 value={value}
                 showButton={!noButtons.includes(name) && hasPoints}
-                disableButton={!hasPoints}
+                disableButton={!hasPoints || disableChange}
                 changeStats={changeStats}
               />
             );

@@ -12,6 +12,7 @@ import MainMenu from './MainMenu/MainMenu';
 import BattleStage from './BattleStage/BattleStage';
 import DungeonStage from './DungeonStage/DungeonStage';
 import Character from './Character/Character';
+import ItemCard from './ItemCard/ItemCard';
 
 export {
   LoadingIcon,
@@ -28,4 +29,5 @@ export {
   BattleStage,
   DungeonStage,
   Character,
+  ItemCard,
 }

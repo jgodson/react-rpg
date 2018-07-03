@@ -13,4 +13,8 @@
   --lighter: #ececec;
   --dark: #2c2c2c;
   --darker: #0f0f0f;
+
+  /* Number Colors */
+  --heal-number: #158f11;
+  --damage-number: #bd0909;
 }

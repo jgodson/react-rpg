@@ -17,12 +17,15 @@
     "rewards": {
       "gold": [7,9],
       "exp": [12,16],
-      "items": [10000],
-      "itemChance": [1,5]
+      "items": {
+        "10001": [99,99],
+        "10002": [99,99]
+      }
     },
     "assetInfo": {
       "image": "slime1",
-      "sound": "slime"
+      "attackSound": "slimeAttack",
+      "deathSound": "slimeDeath"
     }
   }
 ]

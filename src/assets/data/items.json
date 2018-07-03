@@ -1,7 +1,15 @@
 [
   {
     "id": 10000,
-    "name": "Healing Potion",
+    "name": "Gold",
+    "type": "gold",
+    "description": "Oooh shiny",
+    "price": [1],
+    "image": "coin"
+  },
+  {
+    "id": 10001,
+    "name": "Health Potion",
     "rarity": 1,
     "type": "potion",
     "collections": ["useInBattle", "buyInStore", "basicNeeds"],
@@ -11,6 +19,20 @@
       "vitals": {
         "health": 250
       }
-    }
+    },
+    "image": "potionRed"
+  },
+  {
+    "id": 10002,
+    "name": "Wooden Sword",
+    "rarity": 1,
+    "type": "weapon",
+    "collections": ["buyInStore", "startingWeapons"],
+    "description": "It's basically a cool stick...",
+    "price": [75,100],
+    "attributes": {
+      "attack": [1,10]
+    },
+    "image": "swordWood"
   }
 ]

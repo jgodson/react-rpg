@@ -1,0 +1,78 @@
+.BattleStage {
+  position: relative;
+  display: flex;
+  height: 100%;
+  background-size: cover;
+  justify-content: space-between;
+}
+
+.BattleStage .rewards h3 {
+  text-align: center;
+  align-self: center;
+}
+
+.BattleStage .rewards {
+  visibility: hidden;
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  opacity: 0;
+  z-index: 1;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  transition: opacity 400ms ease-in 1400ms, visibility 0ms linear 1000ms;
+}
+
+.BattleStage .rewards p {
+  margin: 0.6em 0;
+}
+
+.BattleStage .rewards.shown {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media screen and (min-width: 635px) {
+  .BattleStage .rewards {
+    right: 5%;
+    left: 5%;
+    top: 5%;
+    bottom: 5%;
+  }
+}
+
+.BattleStage .rewards .Button {
+  align-self: flex-end;
+  position: relative;
+  margin-top: auto;
+  top: 5px;
+  left: 5px;
+}
+
+.BattleStage .items {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.BattleStage .heros,
+.BattleStage .monsters {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.BattleStage .heros .Bar:first-child {
+  margin-top: -15px;
+}
+
+.BattleStage .heros img {
+  transform: scaleX(-1);
+}
