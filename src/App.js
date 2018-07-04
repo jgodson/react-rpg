@@ -9,6 +9,7 @@ import gameBackgrounds from './assets/backgrounds';
 import gameSounds from './assets/sounds';
 import baseHeroStats from './assets/data/baseStats';
 import heroLevels from './assets/data/heroLevels';
+import allItems from './assets/data/items';
 
 export default class App extends React.Component {
   constructor() {
@@ -49,9 +50,13 @@ export default class App extends React.Component {
         x: 0,
         y: 0,
       },
-      inventory: {
-        gold: 0,
-      },
+      inventory: [
+        {
+          // Add gold (always the first in the array)
+          ...allItems[0],
+          quantity: 0,
+        }
+      ],
       hero: {
         ...baseHeroStats,
         stats: {

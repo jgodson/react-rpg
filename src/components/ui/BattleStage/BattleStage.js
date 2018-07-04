@@ -20,6 +20,7 @@ export default class BattleStage extends React.Component {
 
     this.state = {
       showRewards: false,
+      showDefault: false,
       actionBoost: {
         hero: this.calculateActionBarTime(hero.stats.agility),
         monster: this.calculateActionBarTime(monster.stats.agility),
@@ -47,19 +48,28 @@ export default class BattleStage extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.props.game.monster.vitals.health <= 0 && !this.state.showRewards) {
+    const { game } = this.props;
+    const { monster, hero } = game;
+    // Check if monster or hero is dead
+    if (monster.vitals.health <= 0 && !this.state.showRewards) {
+      this.props.playSoundEffect(monster.assetInfo.deathSound);
       this.props.setBgMusic('combatVictory', 1500);
       this.setState({showRewards: true});
-      clearInterval(this.battleTimer);
-      Object.entries(this.attackTimers).forEach(([_, timer]) => {
-        clearTimeout(timer);
-      });
+      this.clearTimers();
+    } else if (hero.vitals.health <= 0 && !this.state.showDefeat) {
+      this.props.playSoundEffect(hero.assetInfo.deathSound);
+      this.props.setBgMusic('combatDefeat', 1500);
+      this.setState({showDefeat: true});
+      this.clearTimers();
     }
   }
 
   componentWillUnmount() {
     // Clean up the battle timers (hero die will make this happen right now)
-    // TODO: Show hero die modal similar to rewards instead of this
+    this.clearTimers();
+  }
+
+  clearTimers = () => {
     clearInterval(this.battleTimer);
     Object.entries(this.attackTimers).forEach(([_, timer]) => {
       clearTimeout(timer);
@@ -138,35 +148,46 @@ export default class BattleStage extends React.Component {
     const {
       hero,
       monster,
-      level
+      level,
+      inventory,
     } = game;
     const backgroundName = `${level.assetInfo.battleBg}Battle`;
 
     return (
       <div className="BattleStage" style={{ backgroundImage: `url("${battleStages[backgroundName]}")`}}>
-        <div className={`rewards ${this.state.showRewards ? 'shown': ''}`}>
+        <div className={`modal ${this.state.showRewards ? 'shown': ''}`}>
           <h3>You defeated the monster!</h3>
           <p>Gained {monster.rewards.exp} experience!</p>
           <p>The monster dropped some items!</p>
-            <div className="items">
+          <div className="items">
+              <ItemCard
+                image="coin"
+                quantity={monster.rewards.gold}
+                name="Gold"
+              />
+            {monster.rewards.items.map((item) => {
+              return (
                 <ItemCard
-                  image="coin"
-                  quantity={monster.rewards.gold}
-                  name="Gold"
+                  image={item.image}
+                  quantity={1}
+                  stats={item.attributes}
+                  name={item.name}
+                  key={item.id}
                 />
-              {monster.rewards.items.map((item) => {
-                return (
-                  <ItemCard
-                    image={item.image}
-                    quantity={1}
-                    stats={item.attributes}
-                    name={item.name}
-                    key={item.id}
-                  />
-                );
-              })}
-            </div>
-            <Button onClick={this.props.acknowledgeRewards} primary>Continue</Button>
+              );
+            })}
+          </div>
+          <Button onClick={this.props.acknowledgeRewards} primary>Continue</Button>
+        </div>
+        <div className={`modal ${this.state.showDefeat ? 'shown': ''}`}>
+          <h3>You were defeated by the monster!</h3>
+          {inventory[0].quantity > 0
+            ?
+              <p>You have been charged {inventory[0].quantity} gold to be resurrected and to rest in town until fully recovered</p>
+            :
+              <p>Luckily, you were resurrected and allowed to rest in town until fully recovered in hopes that you will have money next time</p>
+          }
+          <Button onClick={() => this.props.heroDie()} primary>Continue</Button>
         </div>
         <div className="monsters">
           <Character
@@ -195,7 +216,6 @@ BattleStage.propTypes = {
   game: PropTypes.object.isRequired,
   transitionToLevel: PropTypes.func.isRequired,
   changeVitals: PropTypes.func.isRequired,
-  monsterDie: PropTypes.func.isRequired,
   heroDie: PropTypes.func.isRequired,
   setActionsAvailable: PropTypes.func.isRequired,
   calculateDamage: PropTypes.func.isRequired,

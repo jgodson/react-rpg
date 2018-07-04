@@ -17,7 +17,6 @@ DungeonStage.propTypes = {
   game: PropTypes.object.isRequired,
   transitionToLevel: PropTypes.func.isRequired,
   changeVitals: PropTypes.func.isRequired,
-  monsterDie: PropTypes.func.isRequired,
   heroDie: PropTypes.func.isRequired,
   setActionsAvailable: PropTypes.func.isRequired,
 };

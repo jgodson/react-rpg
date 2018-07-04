@@ -7,25 +7,50 @@
     "collections": ["basic"],
     "stats": {
       "level": [1,2],
-      "strength": [1,2],
-      "vitality": [4,6],
+      "strength": [3,4],
+      "vitality": [3,6],
       "dexterity": [3,4],
       "agility": [1,3],
-      "magic": [2,3],
-      "defence": [0]
+      "magic": [1,2]
     },
     "rewards": {
       "gold": [7,9],
-      "exp": [12,16],
+      "exp": [9,12],
       "items": {
-        "10001": [99,99],
-        "10002": [99,99]
+        "10001": [1,3]
       }
     },
     "assetInfo": {
       "image": "slime1",
       "attackSound": "slimeAttack",
       "deathSound": "slimeDeath"
+    }
+  },
+  {
+    "name": "Ogre",
+    "description": "Big ugly dude",
+    "id": 10001,
+    "difficulty": 1,
+    "collections": ["basic", "size:medium"],
+    "stats": {
+      "level": [1,2],
+      "strength": [5,7],
+      "vitality": [4,6],
+      "dexterity": [2,3],
+      "agility": [1,2],
+      "magic": [1,1]
+    },
+    "rewards": {
+      "gold": [11,13],
+      "exp": [12,16],
+      "items": {
+        "10001": [2,4]
+      }
+    },
+    "assetInfo": {
+      "image": "ogre1",
+      "attackSound": "ogreAttack",
+      "deathSound": "ogreDeath"
     }
   }
 ]

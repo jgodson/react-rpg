@@ -6,12 +6,12 @@
   justify-content: space-between;
 }
 
-.BattleStage .rewards h3 {
+.BattleStage .modal h3 {
   text-align: center;
   align-self: center;
 }
 
-.BattleStage .rewards {
+.BattleStage .modal {
   visibility: hidden;
   position: absolute;
   right: 0;
@@ -30,17 +30,17 @@
   transition: opacity 400ms ease-in 1400ms, visibility 0ms linear 1000ms;
 }
 
-.BattleStage .rewards p {
+.BattleStage .modal p {
   margin: 0.6em 0;
 }
 
-.BattleStage .rewards.shown {
+.BattleStage .modal.shown {
   opacity: 1;
   visibility: visible;
 }
 
 @media screen and (min-width: 635px) {
-  .BattleStage .rewards {
+  .BattleStage .modal {
     right: 5%;
     left: 5%;
     top: 5%;
@@ -48,7 +48,7 @@
   }
 }
 
-.BattleStage .rewards .Button {
+.BattleStage .modal .Button {
   align-self: flex-end;
   position: relative;
   margin-top: auto;
@@ -75,4 +75,9 @@
 
 .BattleStage .heros img {
   transform: scaleX(-1);
+  margin-bottom: -25px;
+}
+
+.BattleStage .heros .number {
+
 }

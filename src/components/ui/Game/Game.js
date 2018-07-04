@@ -49,6 +49,7 @@ export default class Game extends React.Component {
           assetInfo: {
             image: 'knight',
             attackSound: 'swordAttack',
+            deathSound: '',
           },
         },
       };
@@ -116,32 +117,33 @@ export default class Game extends React.Component {
     const currentExp = this.state.hero.vitals.exp;
     const nextLevelExp = this.state.hero.stats.nextExpLevel;
     const levelUp = currentExp + exp >= nextLevelExp;
-    const newHealth = this.state[character]['vitals']['health'] + health;
-    const newMana = this.state[character]['vitals']['mana'] + mana;
-    const isDead = newHealth <= 0;
+    let newHealth = this.state[character]['vitals']['health'] + health;
+    let newMana = this.state[character]['vitals']['mana'] + mana;
+    const maxHealth = this.state[character]['stats']['health'];
+    const maxMana = this.state[character]['stats']['mana'];
+
+    // Don't allow health or mana to go above maximums
+    if (newHealth > maxHealth) {
+      newHealth = maxHealth;
+    }
+    if (newMana > maxMana) {
+      newMana = maxMana;
+    }
 
     this.setState({
       ...this.state,
       [character]: {
         ...this.state[character],
         vitals: {
-          health: isDead ? 0 : newHealth,
-          mana: newMana > 0 ? newMana : 0,
+          health: newHealth,
+          mana: newMana,
           exp: this.state[character]['vitals']['exp'] + exp,
         },
       },
     });
 
-    if (character.indexOf('hero') > -1) {
-      if (levelUp) {
-        this.levelUp(character);
-      } else if (isDead) {
-        this.heroDie(character);
-      }
-    } else if (character.indexOf('monster') > -1) {
-      if (isDead) {
-        this.monsterDie(character);
-      }
+    if (character.indexOf('hero') > -1 && levelUp) {
+      this.levelUp(character);
     }
   }
 
@@ -168,11 +170,9 @@ export default class Game extends React.Component {
   }
 
   heroDie = (heroName = 'hero') => {
-    const hero = this.state[heroName];
-    this.props.playSoundEffect(hero.assetInfo.deathSound);
-
     this.setState({
       gameState: 'town',
+      monster: null,
       [heroName]: {
         ...this.state[heroName],
         vitals: {
@@ -180,22 +180,16 @@ export default class Game extends React.Component {
           health: this.state[heroName]['stats']['health'],
           mana: this.state[heroName]['stats']['mana'],
         },
+        actionsDisabled: false,
       },
-      inventory: {
-        ...this.state.inventory,
-        gold: 0,
-      },
-      actionsDisabled: false,
+      inventory: [
+        {
+          ...this.state.inventory[0],
+          quantity: 0,
+        },
+        ...this.state.inventory.slice(1),
+      ],
     });
-    console.info('You have died and have lost all your gold 🙁');
-  }
-
-  monsterDie = (monsterName = 'monster') => {
-    const monster = this.state[monsterName];
-    this.props.playSoundEffect(monster.assetInfo.deathSound);
-    // TODO: calculate chance of getting an item when items exist and modify monster array to match.
-    // TODO: this will make it so player could pick the items they wanted if there were multiple items
-    console.info(`You killed the monster! Got ${monster.rewards.exp} experience and ${monster.rewards.gold} gold!`);
   }
 
   acknowledgeRewards = () => {
@@ -213,10 +207,14 @@ export default class Game extends React.Component {
         },
         actionsDisabled: false,
       },
-      inventory: {
-        ...this.state.inventory,
-        gold: this.state.inventory.gold + rewards.gold,
-      },
+      inventory: [
+        {
+          ...this.state.inventory[0],
+          quantity: this.state.inventory[0].quantity + rewards.gold,
+        },
+        ...this.state.inventory.slice(1),
+        ...rewards.items
+      ],
     });
   }
 
@@ -283,22 +281,33 @@ export default class Game extends React.Component {
   // Generates a monster object based on a given monster
   populateMonsterData = (monsters) => {
     return monsters.map((monsterSchema) => {
-      const stats = {};
+      const minLevel = monsterSchema.stats.level[0];
+      let maxLevel = Math.min(monsterSchema.stats.level[1], this.state.hero.stats.level);
+      if (maxLevel < minLevel) {
+        maxLevel = minLevel;
+      }
+      const stats = {
+        level: generateStat([minLevel, maxLevel]),
+      };
       const rewards = {};
+      const skipStats = ['attack', 'defence', 'level']
       Object.entries(monsterSchema.stats).forEach(([stat, minMax]) => {
-        stats[stat] = generateStat(minMax);
+        if (skipStats.includes(stat)) { return; }
+        stats[stat] = generateStat(minMax) * stats.level;
       });
       const {health, mana} = this.calculateVitals(stats);
-      const attack = this.calculateAttack(stats);
+      const baseAttack = monsterSchema.stats.attack ? generateStat(monsterSchema.stats.attack) : 0;
+      const attack = this.calculateAttack(stats) + baseAttack;
+      const defence = monsterSchema.stats.defence ? generateStat(monsterSchema.stats.defence) : 0;
       Object.entries(monsterSchema.rewards).forEach(([rewardName, reward]) => {
         if (rewardName !== 'items') {
-          rewards[rewardName] = generateStat(reward);
+          rewards[rewardName] = generateStat(reward) * stats.level;
         } else {
           rewards.items = [];
           Object.entries(monsterSchema.rewards.items).forEach(([nameOrId, percentRange]) => {
             // Use min/max generator function to pick a chance between the two numbers
-            const itemChance = generateStat(percentRange);
-            const gotItem = checkIfSuccessful(itemChance);
+            const itemChance = generateStat(percentRange) * stats.level;
+            const gotItem = checkIfSuccessful(itemChance < 100 ? itemChance : 100);
             if (!gotItem) { return; }
             const item = this.getItem(nameOrId);
             if (item.attributes) {
@@ -320,6 +329,7 @@ export default class Game extends React.Component {
           health,
           mana,
           attack,
+          defence,
         },
         vitals: {
           health,
@@ -350,7 +360,6 @@ export default class Game extends React.Component {
     const defender = this.state[target];
     const criticalMult = this.checkCritical(attacker, defender) ? 5 : 1;
     const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
-
     const attackSound = this.state[name]['assetInfo']['attackSound'];
     this.props.playSoundEffect(attackSound);
 
@@ -368,10 +377,6 @@ export default class Game extends React.Component {
         actionsDisabled: true,
       },
     });
-
-    if (defender.vitals.health <= damage) {
-      this.monsterDie();
-    }
   }
 
   heroWasReset = (names) => {
@@ -397,7 +402,11 @@ export default class Game extends React.Component {
   calculateDamage = (baseAttack, baseDefence = 0, multiplier = 1) => {
     const randomizer = Math.max(Math.random() * 100, 80) / 100;
     const randomizer2 = Math.max(Math.random() * 100, 70) / 100;
-    return Math.floor((baseAttack * randomizer * multiplier) - (baseDefence * randomizer2));
+    let damage = Math.floor((baseAttack * randomizer * multiplier) - (baseDefence * randomizer2));
+    if (baseDefence !== 0 && damage < 0) {
+      damage = 0;
+    }
+    return damage;
   }
 
   // Start a fight with the monster that was touche
@@ -430,6 +439,37 @@ export default class Game extends React.Component {
     }
     // Duplicate object so we avoid any funkiness
     return JSON.parse(JSON.stringify(item));
+  }
+
+  restAtInn = () => {
+    const cost = this.state.hero.stats.level * 15;
+    const hasEnough = this.state.inventory[0].quantity >= cost;
+    const doIt = window.confirm(`A room will cost ${cost} gold. Do you wish to rest here?`);
+    if (!doIt) { return; }
+    if (!hasEnough) {
+      alert("Sorry, you do not have enough gold to rest here");
+      return;
+    }
+    const maxHealth = this.state.hero.stats.health;
+    const maxMana = this.state.hero.stats.mana;
+
+
+    this.setState({
+      hero: {
+        ...this.state.hero,
+        vitals: {
+          ...this.state.hero.vitals,
+          health: maxHealth,
+          mana: maxMana,
+        }
+      },
+      inventory: [
+        {
+          quantity: this.state.inventory[0].quantity - cost,
+        },
+        ...this.state.inventory.slice(1),
+      ],
+    });
   }
 
   render() {
@@ -485,7 +525,7 @@ export default class Game extends React.Component {
         {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
       inn: [
-        {name: 'Rest', disabled: true},
+        {name: 'Rest', onClick: this.restAtInn},
         {name: 'Quests', disabled: true},
         {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
@@ -500,7 +540,6 @@ export default class Game extends React.Component {
             game={this.state}
             transitionToLevel={this.transitionToLevel}
             changeVitals={this.changeVitals}
-            monsterDie={this.monsterDie}
             heroDie={this.heroDie}
             acknowledgeRewards={this.acknowledgeRewards}
             setActionsAvailable={this.setActionsAvailable}

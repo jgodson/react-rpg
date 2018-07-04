@@ -10,11 +10,14 @@
   visibility: hidden;
 }
 
-.Character .number {
+.Character .vitals {
   position: relative;
-  text-align: center;
-  height: 40px;
-  top: 60px;
+}
+
+.Character .number {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.1rem;
   opacity: 0;
   visibility: hidden;

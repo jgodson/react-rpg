@@ -14,7 +14,7 @@
     "type": "potion",
     "collections": ["useInBattle", "buyInStore", "basicNeeds"],
     "description": "Heals a small amount of health",
-    "price": [25,50],
+    "price": [35],
     "attributes": {
       "vitals": {
         "health": 250

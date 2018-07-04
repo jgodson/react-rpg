@@ -12,7 +12,7 @@ export default function ItemCard(props) {
     name
   } = props;
 
-  const showStats = ['attack', 'defence'];
+  const showStats = ['attack', 'defence', 'vitals'];
   const hasStatsToShow = stats && Object.keys(stats).some((stat) => showStats.includes(stat));
 
   const classes = [
@@ -25,12 +25,23 @@ export default function ItemCard(props) {
       {hasStatsToShow &&
         <div className="tooltiptext">
           {Object.entries(stats).map(([name, value]) => {
-            return (
-              <div key={name}>
-                <div>{name[0].toUpperCase() + name.substring(1)}</div>
-                <div>{value}</div>
-              </div>
-            );
+            if (typeof value === 'object') {
+              return Object.entries(value).map(([name, value]) => {
+                return (
+                  <div key={name}>
+                    <div>{name[0].toUpperCase() + name.substring(1)}</div>
+                    <div>{value > 0 ? '+' : '-'}{value}</div>
+                  </div>
+                );
+              });
+            } else {
+              return (
+                <div key={name}>
+                  <div>{name[0].toUpperCase() + name.substring(1)}</div>
+                  <div>{value > 0 ? '+' : '-'}{value}</div>
+                </div>
+              );
+            }
           })}
         </div>
       }

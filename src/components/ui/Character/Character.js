@@ -42,10 +42,10 @@ export default class Character extends React.PureComponent {
     return (
       <div className={`Character ${isDead ? 'isDead' : ''}`}>
         <div className="image">
-          <div className={numberClasses}>{this.state.damage}</div>
           <img src={imagesrc} alt="" />
         </div>
         <div className="vitals">
+          <div className={numberClasses}>{this.state.damage}</div>
           {showHealth && 
             <Bar
               current={vitals.health}

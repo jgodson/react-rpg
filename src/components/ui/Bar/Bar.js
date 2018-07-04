@@ -40,7 +40,7 @@ export default function Bar(props) {
     <div className="Bar">
       <div className="info">
         {label && <label>{label}</label>}
-        {showStatus && (!isMaxedOut ? <span>{current}/{max}</span> : <span>Max</span>)}
+        {showStatus && (!isMaxedOut ? <span>{current > 0 ? current : 0}/{max}</span> : <span>Max</span>)}
       </div>
       <div 
         className={progressBarClasses}
