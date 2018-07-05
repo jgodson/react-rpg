@@ -5,38 +5,38 @@
   },
   "2": {
     "requiredExp": 300,
-    "points": 3
+    "points": 5
   },
   "3": {
     "requiredExp": 500,
-    "points": 3
+    "points": 5
   },
   "4": {
     "requiredExp": 750,
-    "points": 3
+    "points": 5
   },
   "5": {
     "requiredExp": 1100,
-    "points": 5
+    "points": 8
   },
   "6": {
     "requiredExp": 1500,
-    "points": 3
+    "points": 5
   },
   "7": {
     "requiredExp": 2000,
-    "points": 3
+    "points": 5
   },
   "8": {
     "requiredExp": 2700,
-    "points": 3
+    "points": 5
   },
   "9": {
     "requiredExp": 3700,
-    "points": 3
+    "points": 5
   },
   "10": {
     "requiredExp": 5000,
-    "points": 5
+    "points": 8
   }
 }

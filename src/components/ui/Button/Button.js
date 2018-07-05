@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Button.css';
+import { Tooltip } from '../../ui';
 
 export default function Button(props) {
   const {
@@ -11,6 +12,7 @@ export default function Button(props) {
     secondary,
     destructive,
     disabled,
+    tooltip,
   } = props;
 
   const classes = [
@@ -22,6 +24,8 @@ export default function Button(props) {
 
   return (
     <button className={classes} onClick={onClick} disabled={Boolean(disabled)}>
+      {tooltip && <Tooltip>{tooltip}</Tooltip>}
+      {/* Need to implment icon component yet */}
       {icon && icon}
       {children}
     </button>
@@ -36,4 +40,8 @@ Button.propTypes = {
   secondary: PropTypes.bool,
   destructive: PropTypes.bool,
   disabled: PropTypes.bool,
+  tooltip: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.node
+  ]),
 }

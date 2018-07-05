@@ -10,11 +10,14 @@ html, body {
   padding: 0;
 }
 
+body {
+  font-family: 'Cup And Talon';
+  font-size: 1.5rem;
+}
+
 #root {
   min-height: 100vh;
   background-size: cover;
-  font-family: 'Cup And Talon';
-  font-size: 1.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;

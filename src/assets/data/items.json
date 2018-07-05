@@ -12,7 +12,7 @@
     "name": "Health Potion",
     "rarity": 1,
     "type": "potion",
-    "collections": ["useInBattle", "buyInStore", "basicNeeds"],
+    "collections": ["use", "buy", "basic-needs", "sell"],
     "description": "Heals a small amount of health",
     "price": [35],
     "attributes": {
@@ -27,7 +27,7 @@
     "name": "Wooden Sword",
     "rarity": 1,
     "type": "weapon",
-    "collections": ["buyInStore", "startingWeapons"],
+    "collections": ["buy", "starting-item", "sell"],
     "description": "It's basically a cool stick...",
     "price": [75,100],
     "attributes": {

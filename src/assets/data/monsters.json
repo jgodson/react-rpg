@@ -6,7 +6,7 @@
     "difficulty": 1,
     "collections": ["basic"],
     "stats": {
-      "level": [1,2],
+      "level": [1,3],
       "strength": [3,4],
       "vitality": [3,6],
       "dexterity": [3,4],
@@ -23,6 +23,7 @@
     "assetInfo": {
       "image": "slime1",
       "attackSound": "slimeAttack",
+      "damageSound": "slimeDamage",
       "deathSound": "slimeDeath"
     }
   },
@@ -31,9 +32,9 @@
     "description": "Big ugly dude",
     "id": 10001,
     "difficulty": 1,
-    "collections": ["basic", "size:medium"],
+    "collections": ["basic", "size-medium"],
     "stats": {
-      "level": [1,2],
+      "level": [1,3],
       "strength": [5,7],
       "vitality": [4,6],
       "dexterity": [2,3],
@@ -50,7 +51,33 @@
     "assetInfo": {
       "image": "ogre1",
       "attackSound": "ogreAttack",
+      "damageSound": "ogreDamage",
       "deathSound": "ogreDeath"
+    }
+  },
+  {
+    "name": "Bat",
+    "description": "Flying nusiance that bites",
+    "id": 10002,
+    "difficulty": 1,
+    "collections": ["basic", "flying"],
+    "stats": {
+      "level": [1,3],
+      "strength": [1,3],
+      "vitality": [2,4],
+      "dexterity": [5,7],
+      "agility": [4,6],
+      "magic": [1,2]
+    },
+    "rewards": {
+      "gold": [2,3],
+      "exp": [10,14]
+    },
+    "assetInfo": {
+      "image": "bat1",
+      "attackSound": "biteAttack",
+      "damageSound": "batDamage",
+      "deathSound": "batDeath"
     }
   }
 ]

@@ -4,6 +4,21 @@
   max-width: 800px;
 }
 
+.ActionList .header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ActionList .gold {
+  display: flex;
+  align-items: center;
+  margin: -5px 5px 0 0;
+}
+
+.ActionList .gold img {
+  height: 40px;
+}
+
 .ActionList .button-container {
   display: flex;
   justify-content: space-evenly;

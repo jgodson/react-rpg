@@ -11,8 +11,11 @@ import ActionList from './ActionList/ActionList';
 import MainMenu from './MainMenu/MainMenu';
 import BattleStage from './BattleStage/BattleStage';
 import DungeonStage from './DungeonStage/DungeonStage';
+import TownStage from './TownStage/TownStage';
 import Character from './Character/Character';
 import ItemCard from './ItemCard/ItemCard';
+import Modal from './Modal/Modal';
+import Tooltip from './Tooltip/Tooltip';
 
 export {
   LoadingIcon,
@@ -30,4 +33,7 @@ export {
   DungeonStage,
   Character,
   ItemCard,
+  TownStage,
+  Modal,
+  Tooltip,
 }

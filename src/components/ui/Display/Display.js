@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Display.css';
-import { BattleStage, DungeonStage } from '../../ui';
+import { BattleStage, DungeonStage, TownStage } from '../../ui';
 
 export default function Display(props) {
   const { game } = props;
@@ -14,7 +14,7 @@ export default function Display(props) {
       case 'dungeon':
         return <DungeonStage {...props} />;
       default:
-        return null;
+        return <TownStage {...props} />;
     }
   })();
 

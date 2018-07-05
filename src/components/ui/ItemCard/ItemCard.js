@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Tooltip } from '../../ui';
 import itemImages from '../../../assets/items';
 import './ItemCard.css';
 
@@ -21,9 +22,9 @@ export default function ItemCard(props) {
   ].filter((cls) => cls).join(' ');
 
   return (
-    <div className={classes} onClick={() => {/* To allow "hover" on mobile */}}>
+    <div className={classes}>
       {hasStatsToShow &&
-        <div className="tooltiptext">
+        <Tooltip>
           {Object.entries(stats).map(([name, value]) => {
             if (typeof value === 'object') {
               return Object.entries(value).map(([name, value]) => {
@@ -43,7 +44,7 @@ export default function ItemCard(props) {
               );
             }
           })}
-        </div>
+        </Tooltip>
       }
       <div>{name}</div>
       {quantity > 1 && <div>{quantity}</div>}

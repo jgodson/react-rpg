@@ -6,6 +6,7 @@ import {
   ActionList,
   Vitals,
   Bar,
+  Modal,
 } from '../../ui'
 import heroLevels from '../../../assets/data/heroLevels';
 import statsMap from '../../../assets/data/statsMap';
@@ -20,6 +21,14 @@ export default class Game extends React.Component {
   constructor(props) {
     super(props);
     const { gameData } = props;
+
+    // Game constants
+    // Damage is multiplied by this amount when a critical hit occurs
+    this.CRITICAL_HIT_MULTIPLIER = 3;
+    // Chance of inflicting a critical hit
+    this.CRITICAL_HIT_CHANCE = 2;
+    // High agility and dexterity get you a better chance of critical hit
+    this.CRITICAL_HIT_CHANCE_IMPROVED = 3;
 
     if (gameData.hero.new) {
       const { health, mana } = this.calculateVitals(gameData.hero.stats);
@@ -52,6 +61,7 @@ export default class Game extends React.Component {
             deathSound: '',
           },
         },
+        townAction: null,
       };
     } else {
       this.state = gameData;
@@ -147,7 +157,7 @@ export default class Game extends React.Component {
     }
   }
 
-  levelUp = (character) => {
+  levelUp = (character = 'hero') => {
     const leftoverExp = this.state.hero.stats.nextExpLevel - this.state.hero.vitals.exp;
     const nextLevel = this.state.hero.stats.level + 1;
     let {requiredExp = Number.MAX_SAFE_INTEGER, points = 0} = heroLevels[nextLevel] || {};
@@ -194,6 +204,9 @@ export default class Game extends React.Component {
 
   acknowledgeRewards = () => {
     const { rewards } = this.state.monster;
+    const currentExp = this.state.hero.vitals.exp;
+    const nextLevelExp = this.state.hero.stats.nextExpLevel;
+    const levelUp = currentExp + rewards.exp >= nextLevelExp;
 
     // Add items that were wanted to hero's inventory
     this.setState({
@@ -216,6 +229,11 @@ export default class Game extends React.Component {
         ...rewards.items
       ],
     });
+
+    if (levelUp) {
+      // Delay this slightly to let previous state update take effect
+      setTimeout(() => this.levelUp(), 50);
+    }
   }
 
   setActionsAvailable = (character, available) => {
@@ -289,11 +307,27 @@ export default class Game extends React.Component {
       const stats = {
         level: generateStat([minLevel, maxLevel]),
       };
-      const rewards = {};
+      const levelMultiplier = (() => {
+        if (stats.level > 3) {
+          return stats.level / 2;
+        } else if (stats.level === 2) {
+          return 1.25;
+        } else {
+          return 1;
+        }
+      })();
+      const rewards = { items: [] };
+      let minPoints = 0;
+      let maxPoints = 0;
+      let currentPoints = 0;
       const skipStats = ['attack', 'defence', 'level']
       Object.entries(monsterSchema.stats).forEach(([stat, minMax]) => {
         if (skipStats.includes(stat)) { return; }
-        stats[stat] = generateStat(minMax) * stats.level;
+        const statValue = generateStat(minMax);
+        minPoints += minMax[0];
+        maxPoints += minMax[1] || minMax[0];
+        currentPoints += statValue;
+        stats[stat] = Math.floor(statValue * levelMultiplier);
       });
       const {health, mana} = this.calculateVitals(stats);
       const baseAttack = monsterSchema.stats.attack ? generateStat(monsterSchema.stats.attack) : 0;
@@ -301,21 +335,32 @@ export default class Game extends React.Component {
       const defence = monsterSchema.stats.defence ? generateStat(monsterSchema.stats.defence) : 0;
       Object.entries(monsterSchema.rewards).forEach(([rewardName, reward]) => {
         if (rewardName !== 'items') {
-          rewards[rewardName] = generateStat(reward) * stats.level;
+          const percentage = Math.ceil(((currentPoints - minPoints) / (maxPoints - minPoints) * 100)) || 0;
+          rewards[rewardName] = Math.floor(this.calculatePercentagePoint(reward, percentage) * levelMultiplier);
         } else {
-          rewards.items = [];
           Object.entries(monsterSchema.rewards.items).forEach(([nameOrId, percentRange]) => {
             // Use min/max generator function to pick a chance between the two numbers
-            const itemChance = generateStat(percentRange) * stats.level;
+            const itemChance = generateStat(percentRange);
             const gotItem = checkIfSuccessful(itemChance < 100 ? itemChance : 100);
             if (!gotItem) { return; }
             const item = this.getItem(nameOrId);
             if (item.attributes) {
+              let minPoints = 0;
+              let maxPoints = 0;
+              let currentPoints = 0;
               Object.entries(item.attributes).forEach(([name, value]) => {
                 if (Array.isArray(value)) {
-                  item.attributes[name] = generateStat(value);
+                  minPoints += value[0];
+                  maxPoints += value[1] || value[0];
+                  const generatedValue = generateStat(value);
+                  currentPoints += generatedValue;
+                  item.attributes[name] = generatedValue;
                 }
               });
+              const percentage = Math.ceil(((currentPoints - minPoints) / (maxPoints - minPoints) * 100)) || 0;
+              item.price = this.calculatePercentagePoint(item.price, percentage);
+            } else {
+              item.price = generateStat(item.price);
             }
             rewards.items.push(item);
           });
@@ -358,7 +403,7 @@ export default class Game extends React.Component {
   heroAttack = (name = 'hero', target = 'monster') => {
     const attacker = this.state[name];
     const defender = this.state[target];
-    const criticalMult = this.checkCritical(attacker, defender) ? 5 : 1;
+    const criticalMult = this.checkCritical(attacker, defender) ? this.CRITICAL_HIT_MULTIPLIER : 1;
     const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
     const attackSound = this.state[name]['assetInfo']['attackSound'];
     this.props.playSoundEffect(attackSound);
@@ -388,15 +433,19 @@ export default class Game extends React.Component {
     this.setState(newState);
   }
 
-  // TODO: implement change of a critical hit for an extra multiplier
+  calculatePercentagePoint = ([min, max], percentage) => {
+    if (!max) { return min; }
+    return Math.floor((max - min) * (percentage) * 0.01 + min);
+  }
+
   checkCritical = (attacker, defender) => {
     const attackerPoints = attacker.stats.dexterity + attacker.stats.agility;
     const defenderPoints = defender.stats.dexterity + defender.stats.agility;
     const randomizer = Math.random() * 100;
     if (attackerPoints > defenderPoints) {
-      return randomizer > 90;
+      return randomizer > (100 - this.CRITICAL_HIT_CHANCE_IMPROVED);
     }
-    return randomizer > 95;
+    return randomizer > (100 - this.CRITICAL_HIT_CHANCE);
   }
 
   calculateDamage = (baseAttack, baseDefence = 0, multiplier = 1) => {
@@ -441,18 +490,9 @@ export default class Game extends React.Component {
     return JSON.parse(JSON.stringify(item));
   }
 
-  restAtInn = () => {
-    const cost = this.state.hero.stats.level * 15;
-    const hasEnough = this.state.inventory[0].quantity >= cost;
-    const doIt = window.confirm(`A room will cost ${cost} gold. Do you wish to rest here?`);
-    if (!doIt) { return; }
-    if (!hasEnough) {
-      alert("Sorry, you do not have enough gold to rest here");
-      return;
-    }
+  restAtInn = (cost) => {
     const maxHealth = this.state.hero.stats.health;
     const maxMana = this.state.hero.stats.mana;
-
 
     this.setState({
       hero: {
@@ -469,6 +509,7 @@ export default class Game extends React.Component {
         },
         ...this.state.inventory.slice(1),
       ],
+      townAction: null,
     });
   }
 
@@ -525,13 +566,35 @@ export default class Game extends React.Component {
         {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
       inn: [
-        {name: 'Rest', onClick: this.restAtInn},
+        {name: 'Rest', onClick: () => this.setState({townAction: 'inn'})},
         {name: 'Quests', disabled: true},
         {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
       ],
     }
 
     const availableActions = actions[gameState];
+
+    let modalActions = null;
+    const modalContent = (() => {
+      switch (this.state.townAction) {
+        case 'inn': 
+          const cost = this.state.hero.stats.level * 15;
+          const playerCanRest = this.state.inventory[0].quantity >= cost;
+          modalActions = [
+            { 
+              name: 'Yes',
+              primary: true,
+              disabled: !playerCanRest,
+              tooltip: !playerCanRest && 'Not enough gold',
+              onClick: () => this.restAtInn(cost),
+            },
+            { name: 'No', destructive: true, onClick: () => this.setState({townAction: null}) },
+          ];
+          return <p>Would you like to rest for {cost} gold</p>;
+        default:
+          return;
+      }
+    })();
 
     return (
       <main className="Main">
@@ -558,7 +621,8 @@ export default class Game extends React.Component {
         <FlexRow>
           <ActionList 
             availableActions={availableActions}
-            disabled={this.state.hero.actionsDisabled} 
+            disabled={this.state.hero.actionsDisabled}
+            gold={this.state.inventory[0].quantity}
           />
           <Vitals>
             <Bar
@@ -586,6 +650,14 @@ export default class Game extends React.Component {
             />
           </Vitals>
         </FlexRow>
+        <Modal
+          shown={this.state.townAction != null}
+          onClose={() => this.setState({townAction: null})}
+          actions={modalActions}
+          backgroundClickCloses
+        >
+          {modalContent}
+        </Modal>
       </main>
     );
   }
