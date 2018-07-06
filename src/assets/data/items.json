@@ -27,12 +27,25 @@
     "name": "Wooden Sword",
     "rarity": 1,
     "type": "weapon",
-    "collections": ["buy", "starting-item", "sell"],
+    "collections": ["starting-item", "sell"],
     "description": "It's basically a cool stick...",
     "price": [75,100],
     "attributes": {
-      "attack": [1,10]
+      "attack": [3,4]
     },
     "image": "swordWood"
+  },
+  {
+    "id": 10003,
+    "name": "Club",
+    "rarity": 1,
+    "type": "weapon",
+    "collections": ["starting-item", "sell"],
+    "description": "It's a heavy stick",
+    "price": [50, 125],
+    "attributes": {
+      "attack": [2,5]
+    },
+    "image": "hammer"
   }
 ]

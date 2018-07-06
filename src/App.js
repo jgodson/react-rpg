@@ -54,7 +54,7 @@ export default class App extends React.Component {
         {
           // Add gold (always the first in the array)
           ...allItems[0],
-          quantity: 0,
+          quantity: 50,
         }
       ],
       hero: {

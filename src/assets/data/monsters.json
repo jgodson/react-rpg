@@ -39,13 +39,15 @@
       "vitality": [4,6],
       "dexterity": [2,3],
       "agility": [1,2],
-      "magic": [1,1]
+      "magic": [1,1],
+      "attack": [2,5]
     },
     "rewards": {
       "gold": [11,13],
       "exp": [12,16],
       "items": {
-        "10001": [2,4]
+        "10001": [2,4],
+        "10003": [3,6]
       }
     },
     "assetInfo": {

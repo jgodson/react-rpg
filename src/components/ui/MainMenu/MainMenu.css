@@ -16,3 +16,9 @@
   min-width: 200px;
   margin-bottom: 20px;
 }
+
+.MainMenu .version {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}

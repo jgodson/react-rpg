@@ -7,8 +7,8 @@
     "health": 10
   },
   "dexterity": {
-    "attack": 3,
-    "health": 5,
+    "attack": 2,
+    "health": 3,
     "mana": 1
   },
   "agility": {

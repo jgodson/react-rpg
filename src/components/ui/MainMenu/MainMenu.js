@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal } from '../../ui';
+import version from '../../../version.json';
 import './MainMenu.css';
 
 export default class MainMenu extends React.PureComponent {
@@ -40,6 +41,7 @@ export default class MainMenu extends React.PureComponent {
             );
           })}
         </div>
+        <div class="version">V {version.version}</div>
         <Modal
           shown={this.state.showLoginForm}
           onClose={this.toggleLoginForm}

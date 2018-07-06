@@ -173,6 +173,8 @@ export default class Game extends React.Component {
         },
         vitals: {
           ...this.state[character]['vitals'],
+          health: this.state[character]['stats']['health'],
+          mana: this.state[character]['stats']['mana'],
           exp: leftoverExp,
         },
       },

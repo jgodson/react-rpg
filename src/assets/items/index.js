@@ -4,6 +4,7 @@ import potionBlue from './potionBlue.png';
 import potionGreen from './potionGreen.png';
 import potionRed from './potionRed.png';
 import swordWood from './swordWood.png';
+import hammer from './hammer.png';
 
 export default {
   coin,
@@ -12,4 +13,5 @@ export default {
   potionGreen,
   potionRed,
   swordWood,
+  hammer,
 };
