@@ -4,6 +4,11 @@ import { Character, ItemCard, Button } from '../../ui';
 import battleStages from '../../../assets/battle-backgrounds';
 import heroImages from '../../../assets/heros';
 import monsterImages from '../../../assets/monsters';
+import {
+  checkIfSuccessful,
+  MINIMUM_DAMAGE_PERCENTAGE,
+  MINIMUM_DEFENCE_PERCENTAGE
+} from '../../../helpers/battleHelpers';
 import './BattleStage.css';
 
 export default class BattleStage extends React.Component {
@@ -11,12 +16,24 @@ export default class BattleStage extends React.Component {
     super(props);
     const { game } = props;
     const { hero, monster } = game;
+
     // Set a timer to keep the battle moving
     this.battleTimer = setInterval(this.passTime, 200);
     this.attackTimers = {};
 
     // Delay monster attacks once action bar is full to make it more fair
     this.MONSTER_ATTACK_DELAY = 1000;
+
+    // Minimum and improved chance of running from battle 
+    this.RETREAT_CHANCE = 80;
+    this.RETREAT_CHANCE_IMPROVED = 90;
+
+    // Damage is multiplied by this amount when a critical hit occurs
+    this.CRITICAL_HIT_MULTIPLIER = 3;
+    // Chance of inflicting a critical hit
+    this.CRITICAL_HIT_CHANCE = 2;
+    // High agility and dexterity get you a better chance of critical hit
+    this.CRITICAL_HIT_CHANCE_IMPROVED = 3;
 
     this.state = {
       showRewards: false,
@@ -34,6 +51,30 @@ export default class BattleStage extends React.Component {
         monster: this.calculateActionBarStart(monster.stats.agility),
       },
     };
+
+    const combatActions = [
+      {name: 'Attack', destructive: true, onClick: this.heroAttack },
+      {name: 'Magic', destructive: true, disabled: true},
+      {name: 'Item', secondary: true, disabled: true},
+      {name: 'Run', secondary: true, onClick: this.props.endCombat },
+    ];
+
+    this.props.setAvailableActions(combatActions);
+  }
+
+  retreat = () => {
+    const monsterPoints = this.props.game.monster.agility + this.props.game.monster.dexterity;
+    const heroPoints = this.props.game.monster.agility + this.props.game.monster.dexterity;
+    let chance = 0;
+    if (heroPoints > monsterPoints) {
+      chance = this.RETREAT_CHANCE_IMPROVED;
+    } else {
+      chance = this.RETREAT_CHANCE;
+    }
+
+    if (checkIfSuccessful(chance)) {
+      this.props.endCombat()
+    }
   }
 
   componentWillReceiveProps(newProps) {
@@ -81,8 +122,8 @@ export default class BattleStage extends React.Component {
     const attacker = game[name];
     const defender = game[target];
     // TODO: Allow monster to use skills if they have them (some sort of AI going on here)
-    const criticalMult = this.props.checkCritical(attacker, defender) ? 5 : 1;
-    const damage = this.props.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
+    const criticalMult = this.checkCritical(attacker, defender) ? 5 : 1;
+    const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
     this.props.playSoundEffect(attacker.assetInfo.attackSound);
     this.props.changeVitals(target, {health: -damage});
 
@@ -98,6 +139,36 @@ export default class BattleStage extends React.Component {
     });
   }
 
+  heroAttack = () => {
+    const { game } = this.props;
+    const attacker = game.hero;
+    const defender = game.monster;
+
+    const criticalMult = this.checkCritical(attacker, defender) ? this.CRITICAL_HIT_MULTIPLIER : 1;
+    const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
+    const attackSound = game.hero.assetInfo.attackSound;
+    this.props.playSoundEffect(attackSound);
+
+    this.props.setActionsDisabled('hero', true);
+    setTimeout(() => this.props.changeVitals('monster', {health: -damage}), 0);
+    this.setState({
+      actionTime: {
+        ...this.state.actionTime,
+        hero: 0,
+      }
+    });
+  }
+
+  checkCritical = (attacker, defender) => {
+    const attackerPoints = attacker.stats.dexterity + attacker.stats.agility;
+    const defenderPoints = defender.stats.dexterity + defender.stats.agility;
+    const randomizer = Math.random() * 100;
+    if (attackerPoints > defenderPoints) {
+      return randomizer > (100 - this.CRITICAL_HIT_CHANCE_IMPROVED);
+    }
+    return randomizer > (100 - this.CRITICAL_HIT_CHANCE);
+  }
+
   calculateActionBarTime = (agility) => {
     const time = agility / 5;
     return time < 2 ? 2 : time;
@@ -110,6 +181,16 @@ export default class BattleStage extends React.Component {
     return Math.floor(Math.max(...randomNumbers));
   }
 
+  calculateDamage = (baseAttack, baseDefence = 0, multiplier = 1) => {
+    const randomizer = Math.max(Math.random() * 100, MINIMUM_DAMAGE_PERCENTAGE) / 100;
+    const randomizer2 = Math.max(Math.random() * 100, MINIMUM_DEFENCE_PERCENTAGE) / 100;
+    let damage = Math.floor((baseAttack * randomizer * multiplier) - (baseDefence * randomizer2));
+    if (baseDefence !== 0 && damage < 0) {
+      damage = 0;
+    }
+    return damage;
+  }
+
   passTime = () => {
     const boosts = this.state.actionBoost;
     const times = this.state.actionTime;
@@ -120,7 +201,7 @@ export default class BattleStage extends React.Component {
         times[name] = newTime > 100 ? 100 : newTime;
         if (newTime >= 100) {
           if (name.indexOf('hero') > -1) {
-            this.props.setActionsAvailable(name, true);
+            this.props.setActionsDisabled(name, false);
           } else {
             canAttack.push(name);
           }
@@ -217,10 +298,8 @@ BattleStage.propTypes = {
   transitionToLevel: PropTypes.func.isRequired,
   changeVitals: PropTypes.func.isRequired,
   heroDie: PropTypes.func.isRequired,
-  setActionsAvailable: PropTypes.func.isRequired,
-  calculateDamage: PropTypes.func.isRequired,
+  setActionsDisabled: PropTypes.func.isRequired,
   acknowledgeRewards: PropTypes.func.isRequired,
-  checkCritical: PropTypes.func.isRequired,
   playSoundEffect: PropTypes.func.isRequired,
   setBgMusic: PropTypes.func.isRequired,
 };

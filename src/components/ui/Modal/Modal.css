@@ -9,7 +9,7 @@
 .Modal {
   max-width: 1200px;
   max-height: 800px;
-  min-width: 300px;
+  min-width: 245px;
   min-height: 300px;
   left: 50%;
   top: 50%;
@@ -72,11 +72,18 @@
   background-color: var(--lighter);
 }
 
+.Modal h2 {
+  margin: 0 0 10px 0;
+}
+
 .Modal p {
   margin: 0.6em 0;
 }
 
 .Modal .actions .Button {
   min-width: 100px;
+}
+
+.Modal .actions .Button + .Button {
   margin-left: 15px;
 }

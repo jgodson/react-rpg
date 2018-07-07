@@ -45,7 +45,7 @@ export default class App extends React.Component {
 
   freshGameState = () => {
     return {
-      gameState: 'town',
+      gameState: 'creation',
       location: {
         x: 0,
         y: 0,
@@ -108,9 +108,7 @@ export default class App extends React.Component {
 
     this.bgAudio.current.src = gameMusic[musicName];
     if (delay) {
-      setTimeout(() => {
-        this.bgAudio.current.play()
-      }, delay);
+      setTimeout(() => this.bgAudio.current.play(), delay);
     } else {
       this.bgAudio.current.play();
     }
@@ -127,9 +125,7 @@ export default class App extends React.Component {
 
     this.sfxAudio.current.src = gameSounds[soundName];
     if (delay) {
-      setTimeout(() => {
-        this.sfxAudio.current.play()
-      }, delay);
+      setTimeout(() => this.sfxAudio.current.play(), delay);
     } else {
       this.sfxAudio.current.play();
     }
@@ -160,13 +156,11 @@ export default class App extends React.Component {
     if (this.state.bgPlay) {
       this.bgAudio.current.play();
     }
+
     if (newGame) {
       this.setState({
         gameData: this.freshGameState(),
         inProgress: true,
-        hasSaveData: false,
-        musicName: 'townMusic',
-        backgroundName: 'townBackground',
       });
     } else {
       this.setState({

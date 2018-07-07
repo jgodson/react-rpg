@@ -1,3 +1,21 @@
 .Stat td:last-child {
   text-align: right;
 }
+
+.Stat td {
+  font-weight: bold;
+}
+
+.Stat .name-container span {
+  padding: 8px;
+}
+
+.Stat .name-container .Button {
+  font-family: 'Cup and Talon';
+  color: inherit;
+  font-size: inherit;
+}
+
+.stat-modal .Button {
+  margin-top: 15px;
+}

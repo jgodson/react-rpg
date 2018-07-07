@@ -4,7 +4,7 @@
     "name": "Heal",
     "cost": 10,
     "required": {
-      "magic": 6
+      "magic": 8
     },
     "attributes": {
       "vitals": {

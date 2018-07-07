@@ -1,0 +1,78 @@
+.CharacterStage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 398px;
+}
+
+.CharacterStage.step3 {
+  height: auto;
+}
+
+.CharacterStage p {
+  margin: 0;
+  text-align: center;
+}
+
+.CharacterStage p + p {
+  margin-top: 15px;
+}
+
+.CharacterStage .avatar-container {
+  position: relative;
+  height: 100%;
+}
+
+.CharacterStage .avatar-container img {
+  height: 80%;
+}
+
+.CharacterStage .avatar-container .Button {
+  position: absolute;
+  font-size: 40px;
+  color: black;
+}
+
+.CharacterStage .avatar-container .Button:hover {
+  color: #272727;
+}
+
+.CharacterStage .avatar-container .Button:first-of-type {
+  left: 0;
+  bottom: calc(50% - 20px);
+}
+
+.CharacterStage .avatar-container .Button:last-of-type {
+  right: 0px;
+  bottom: calc(50% - 20px);
+}
+
+.CharacterStage label {
+  position: absolute;
+  bottom: 90px;
+  margin-left: -75px;
+}
+
+.CharacterStage .hero-name {
+  position: absolute;
+  bottom: 50px;
+  width: 200px;
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 28px;
+  border: 2px solid black;
+  font-family: "Cup and Talon";
+}
+
+.CharacterStage .item-picking {
+  margin-bottom: 40px;
+}
+
+.CharacterStage .EventListener {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}

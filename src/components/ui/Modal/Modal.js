@@ -20,6 +20,9 @@ export default class Modal extends React.PureComponent {
 
     this.modal = document.createElement('div');
     this.modal.className = 'Modal';
+    if (props.customClasses) {
+      this.modal.className += ` ${props.customClasses.join(' ')}`;
+    }
     const button = document.createElement('button');
     button.onclick = () => props.onClose(false);
     button.className = 'close-button';
@@ -39,7 +42,7 @@ export default class Modal extends React.PureComponent {
   }
 
   render() {
-    const { shown, actions, children } = this.props;
+    const { shown, actions, title, children } = this.props;
     if (shown) {
       this.container.classList.add('shown');
     } else {
@@ -50,6 +53,7 @@ export default class Modal extends React.PureComponent {
       if (actions && actions.length) {
         return (
           <React.Fragment>
+            {title && <h2 className="modal-title">{title}</h2>}
             {children}
             <div className="actions">
               {actions.map((action) => (
@@ -82,7 +86,20 @@ export default class Modal extends React.PureComponent {
 
 Modal.propTypes = {
   shown: PropTypes.bool,
+  title: PropTypes.string,
   onClose: PropTypes.func.isRequired,
-  actions: PropTypes.arrayOf(PropTypes.object),
+  actions: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    primary: PropTypes.bool,
+    secondary: PropTypes.bool,
+    destructive: PropTypes.bool,
+    onClick: PropTypes.func.isRequired,
+    disabled: PropTypes.bool,
+    tooltip: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.node
+    ]),
+  })),
+  customClasses: PropTypes.arrayOf(PropTypes.string),
   backgroundClickCloses: PropTypes.bool,
 };

@@ -1,0 +1,17 @@
+{
+  "knight": {
+    "image": "knight",
+    "attackSound": "swordAttack",
+    "deathSound": ""
+  },
+  "archer": {
+    "image": "archer",
+    "attackSound": "bowAttack",
+    "deathSound": ""
+  },
+  "wizard": {
+    "image": "wizard",
+    "attackSound": "staffAttack",
+    "deathSound": ""
+  }
+}

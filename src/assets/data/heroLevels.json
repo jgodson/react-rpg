@@ -38,5 +38,45 @@
   "10": {
     "requiredExp": 5000,
     "points": 8
+  },
+  "11": {
+    "requiredExp": 7500,
+    "points": 7
+  },
+  "12": {
+    "requiredExp": 12500,
+    "points": 7
+  },
+  "13": {
+    "requiredExp": 20000,
+    "points": 7
+  },
+  "14": {
+    "requiredExp": 30000,
+    "points": 7
+  },
+  "15": {
+    "requiredExp": 45000,
+    "points": 10
+  },
+  "16": {
+    "requiredExp": 65000,
+    "points": 7
+  },
+  "17": {
+    "requiredExp": 95000,
+    "points": 7
+  },
+  "18": {
+    "requiredExp": 125000,
+    "points": 7
+  },
+  "19": {
+    "requiredExp": 165000,
+    "points": 7
+  },
+  "20": {
+    "requiredExp": 215000,
+    "points": 10
   }
 }

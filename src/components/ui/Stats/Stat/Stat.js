@@ -1,9 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button } from '../../../ui';
+import { Button, Modal } from '../../../ui';
 import './Stat.css'
 
 export default class Stat extends React.PureComponent {
+  constructor() {
+    super();
+
+    this.state = {
+      modalShown: false,
+    };
+
+    this.modalActions = [
+      {name: 'Close', primary: true, onClick: this.toggleModal}
+    ];
+  }
+
   adjustStat = (name) => () => {
     // Add point to stat and remove statPoint
     this.props.changeStats([
@@ -18,18 +30,39 @@ export default class Stat extends React.PureComponent {
     ]);
   }
 
+  toggleModal = () => this.setState({modalShown: !this.state.modalShown});
+
   render() {
     const {
       name,
       statKey,
+      description,
       value,
       showButton,
       disableButton,
     } = this.props;
 
+    const descriptionContent = description && (
+      <React.Fragment>
+        <Modal
+          title={name}
+          shown={this.state.modalShown}
+          onClose={this.toggleModal}
+          actions={this.modalActions}
+          customClasses={['stat-modal']}
+          backgroundClickCloses
+        >
+          {description}
+        </Modal>
+        <Button onClick={this.toggleModal}>{name}</Button>
+      </React.Fragment>
+    );
+
     return (
       <tr className="Stat">
-        <td>{name}</td>
+        <td className="name-container">
+          {descriptionContent ? descriptionContent : <span>{name}</span>}
+        </td>
         <td>{value}</td>
         <td>
           {showButton &&
@@ -46,6 +79,7 @@ export default class Stat extends React.PureComponent {
 Stat.propTypes = {
   name: PropTypes.string.isRequired,
   statKey: PropTypes.string.isRequired,
+  description: PropTypes.string,
   value: PropTypes.number.isRequired,
   showButton: PropTypes.bool,
   changeStats: PropTypes.func.isRequired,

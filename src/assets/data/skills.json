@@ -8,7 +8,7 @@
     },
     "attributes": {
       "vitals": {
-        "health": -15
+        "health": -8
       }
     }
   },
@@ -21,7 +21,7 @@
     },
     "attributes": {
       "vitals": {
-        "health": -10
+        "health": -6
       }
     }
   }

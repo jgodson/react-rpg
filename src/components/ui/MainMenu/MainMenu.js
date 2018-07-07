@@ -41,7 +41,7 @@ export default class MainMenu extends React.PureComponent {
             );
           })}
         </div>
-        <div class="version">V {version.version}</div>
+        <div className="version">V {version.version}</div>
         <Modal
           shown={this.state.showLoginForm}
           onClose={this.toggleLoginForm}

@@ -3,6 +3,7 @@
     "id": 10000,
     "name": "Gold",
     "type": "gold",
+    "collections": [],
     "description": "Oooh shiny",
     "price": [1],
     "image": "coin"
@@ -12,7 +13,7 @@
     "name": "Health Potion",
     "rarity": 1,
     "type": "potion",
-    "collections": ["use", "buy", "basic-needs", "sell"],
+    "collections": ["use:all", "buy", "basic-needs", "sell", "recovery", "starting-item"],
     "description": "Heals a small amount of health",
     "price": [35],
     "attributes": {
@@ -21,6 +22,21 @@
       }
     },
     "image": "potionRed"
+  },
+  {
+    "id": 10004,
+    "name": "Mana Potion",
+    "rarity": 1,
+    "type": "potion",
+    "collections": ["use:all", "buy", "basic-needs", "sell", "recovery", "starting-item"],
+    "description": "Restores a small amount of mana",
+    "price": [35],
+    "attributes": {
+      "vitals": {
+        "mana": 50
+      }
+    },
+    "image": "potionBlue"
   },
   {
     "id": 10002,

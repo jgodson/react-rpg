@@ -12,8 +12,16 @@
   transition: color 100ms ease-in-out;
 }
 
-.Button:not(.primary):not(.secondary):not(.destructive):hover {
-  color: var(--light);
+.Button:disabled:not(.primary):not(.secondary):not(.destructive) {
+  color: var(--disabled-state);
+}
+
+.Button:not(.primary):not(.secondary):not(.destructive):not(:disabled):hover {
+  color: var(--disabled-state);
+}
+
+.Button:disabled {
+  cursor: not-allowed;
 }
 
 .Button.primary {
@@ -40,11 +48,14 @@
   background: var(--destructive-hover);
 }
 
-.Button:disabled {
+.Button.primary:disabled,
+.Button.secondary:disabled,
+.Button.destructive:disabled {
   background: var(--disabled-state);
-  cursor: not-allowed;
 }
 
-.Button:disabled:hover {
+.Button.primary:disabled:hover,
+.Button.secondary:disabled:hover,
+.Button.destructive:disabled:hover {
   background: var(--disabled-state);
 }

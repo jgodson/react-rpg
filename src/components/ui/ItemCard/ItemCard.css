@@ -1,17 +1,22 @@
 .ItemCard {
   height: 120px;
   width: 80px;
+  margin: 5px;
   position: relative;
   display: flex;
   flex-direction: column;
   box-shadow: 1px 1px 1px 2px;
+  background: #dcdcdc;
+}
+
+.ItemCard.disabled {
+  background: #a2a2a2;
+}
+
+.ItemCard div {
+  text-align: center;
 }
 
 .ItemCard img {
   width: 100%;
-}
-
-/* Add some space between cards */
-.ItemCard + .ItemCard {
-  margin-left: 10px;
 }

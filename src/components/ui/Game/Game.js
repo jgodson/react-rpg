@@ -5,16 +5,19 @@ import {
   Stats,
   ActionList,
   Vitals,
-  Bar,
-  Modal,
 } from '../../ui'
 import heroLevels from '../../../assets/data/heroLevels';
 import statsMap from '../../../assets/data/statsMap';
 import levelData from '../../../assets/data/levels';
-import barColors from '../../../helpers/barColors';
 import allMonsters from '../../../assets/data/monsters';
-import allItems from '../../../assets/data/items';
 import { checkIfSuccessful } from '../../../helpers/battleHelpers';
+import { populateItemStats, getItem } from '../../../helpers/itemHelpers';
+import { 
+  generateStat,
+  calculatePercentagePoint,
+  calculateAttack,
+  calculateVitals 
+} from '../../../helpers/misc';
 import './Game.css';
 
 export default class Game extends React.Component {
@@ -22,26 +25,19 @@ export default class Game extends React.Component {
     super(props);
     const { gameData } = props;
 
-    // Game constants
-    // Damage is multiplied by this amount when a critical hit occurs
-    this.CRITICAL_HIT_MULTIPLIER = 3;
-    // Chance of inflicting a critical hit
-    this.CRITICAL_HIT_CHANCE = 2;
-    // High agility and dexterity get you a better chance of critical hit
-    this.CRITICAL_HIT_CHANCE_IMPROVED = 3;
+    if (gameData.gameState === 'creation') {
+      const { health, mana } = calculateVitals(gameData.hero.stats);
+      const attack = calculateAttack(gameData.hero.stats);
 
-    if (gameData.hero.new) {
-      const { health, mana } = this.calculateVitals(gameData.hero.stats);
-      const attack = this.calculateAttack(gameData.hero.stats);
       this.state = {
         ...gameData,
+        availableActions: [],
         heroDidAttack: [],
         level: {},
         monstersInLevel: [],
         treasuresInLevel: [],
         hero: {
           ...gameData.hero,
-          new: false,
           stats: {
             ...gameData.hero.stats,
             attack,
@@ -55,11 +51,6 @@ export default class Game extends React.Component {
           },
           skills: [],
           magic: [],
-          assetInfo: {
-            image: 'knight',
-            attackSound: 'swordAttack',
-            deathSound: '',
-          },
         },
         townAction: null,
       };
@@ -74,13 +65,36 @@ export default class Game extends React.Component {
     }
   }
 
-  transitionToLevel = (nameOrId) => {
-    let level = null;
-    if (typeof nameOrId === 'number') {
-      level = levelData.find((level) => level.id === nameOrId);
-    } else {
-      level = levelData.find((level) => level.name === nameOrId);
-    }
+  characterCreationCompleted = ({selectedItems, assetInfo, name}) => {
+    // TODO: Probably equip items automatically. There could be multiples of each time of equipment
+    // TODO: So need to validate to make sure that it can all be equipped
+    this.setState({
+      gameState: 'town',
+      hero: {
+        ...this.state.hero,
+        name,
+        assetInfo: {
+          ...assetInfo,
+        },
+      },
+      inventory: [
+        ...this.state.inventory,
+        ...selectedItems,
+      ],
+    });
+  }
+
+  addItemsToInventory = (items) => {
+    this.setState({
+      inventory: [
+        ...this.state.inventory,
+        ...items,
+      ],
+    });
+  }
+
+  transitionToLevel = (name) => {
+    const level = levelData[name];
     const monstersInLevel = this.getMonstersForCurrentLevel(level);
     
     this.setState({
@@ -90,40 +104,17 @@ export default class Game extends React.Component {
     });
   }
 
+  setAvailableActions = (availableActions) => {
+    this.setState({
+      availableActions,
+    });
+  }
+
   getVitals = (character) => this.state[character]['vitals'];
 
   getStats = (character) => this.state[character]['stats'];
 
-  calculateAttack = (stats) => {
-    let attack = null;
-
-    Object.entries(stats).forEach(([name, value]) => {
-      if (statsMap[name]) {
-        attack += (statsMap[name]['attack'] || 0) * value;
-      }
-    });
-
-    return attack;
-  }
-
-  calculateVitals = (stats) => {
-    let health = 0;
-    let mana = 0;
-
-    Object.entries(stats).forEach(([name, value]) => {
-      if (statsMap[name]) {
-        health += (statsMap[name]['health'] || 0) * value;
-        mana += (statsMap[name]['mana'] || 0) * value;
-      }
-    });
-
-    return {
-      health,
-      mana,
-    };
-  }
-
-  changeVitals = (character, {health = 0, mana = 0, exp = 0}) => {
+  changeVitals = (character, {health = 0, mana = 0, exp = 0, gold = 0}) => {
     const currentExp = this.state.hero.vitals.exp;
     const nextLevelExp = this.state.hero.stats.nextExpLevel;
     const levelUp = currentExp + exp >= nextLevelExp;
@@ -150,6 +141,13 @@ export default class Game extends React.Component {
           exp: this.state[character]['vitals']['exp'] + exp,
         },
       },
+      inventory: [
+        {
+          ...this.state.inventory[0],
+          quantity: this.state.inventory[0].quantity + gold || 0,
+        },
+        ...this.state.inventory.slice(1),
+      ],
     });
 
     if (character.indexOf('hero') > -1 && levelUp) {
@@ -238,11 +236,11 @@ export default class Game extends React.Component {
     }
   }
 
-  setActionsAvailable = (character, available) => {
+  setActionsDisabled = (character, disabled) => {
     this.setState({
-      [character]: {
-        ...this.state[character],
-        actionsDisabled: !available,
+      hero: {
+        ...this.state.hero,
+        actionsDisabled: disabled,
       },
     });
   }
@@ -301,7 +299,7 @@ export default class Game extends React.Component {
   // Generates a monster object based on a given monster
   populateMonsterData = (monsters) => {
     return monsters.map((monsterSchema) => {
-      const minLevel = monsterSchema.stats.level[0];
+      const minLevel = Math.min(monsterSchema.stats.level[0], (this.state.hero.stats.level - 1 || 1));
       let maxLevel = Math.min(monsterSchema.stats.level[1], this.state.hero.stats.level);
       if (maxLevel < minLevel) {
         maxLevel = minLevel;
@@ -331,39 +329,22 @@ export default class Game extends React.Component {
         currentPoints += statValue;
         stats[stat] = Math.floor(statValue * levelMultiplier);
       });
-      const {health, mana} = this.calculateVitals(stats);
+      const {health, mana} = calculateVitals(stats);
       const baseAttack = monsterSchema.stats.attack ? generateStat(monsterSchema.stats.attack) : 0;
-      const attack = this.calculateAttack(stats) + baseAttack;
+      const attack = calculateAttack(stats) + baseAttack;
       const defence = monsterSchema.stats.defence ? generateStat(monsterSchema.stats.defence) : 0;
       Object.entries(monsterSchema.rewards).forEach(([rewardName, reward]) => {
         if (rewardName !== 'items') {
           const percentage = Math.ceil(((currentPoints - minPoints) / (maxPoints - minPoints) * 100)) || 0;
-          rewards[rewardName] = Math.floor(this.calculatePercentagePoint(reward, percentage) * levelMultiplier);
+          rewards[rewardName] = Math.floor(calculatePercentagePoint(reward, percentage) * levelMultiplier);
         } else {
           Object.entries(monsterSchema.rewards.items).forEach(([nameOrId, percentRange]) => {
             // Use min/max generator function to pick a chance between the two numbers
             const itemChance = generateStat(percentRange);
             const gotItem = checkIfSuccessful(itemChance < 100 ? itemChance : 100);
             if (!gotItem) { return; }
-            const item = this.getItem(nameOrId);
-            if (item.attributes) {
-              let minPoints = 0;
-              let maxPoints = 0;
-              let currentPoints = 0;
-              Object.entries(item.attributes).forEach(([name, value]) => {
-                if (Array.isArray(value)) {
-                  minPoints += value[0];
-                  maxPoints += value[1] || value[0];
-                  const generatedValue = generateStat(value);
-                  currentPoints += generatedValue;
-                  item.attributes[name] = generatedValue;
-                }
-              });
-              const percentage = Math.ceil(((currentPoints - minPoints) / (maxPoints - minPoints) * 100)) || 0;
-              item.price = this.calculatePercentagePoint(item.price, percentage);
-            } else {
-              item.price = generateStat(item.price);
-            }
+            const item = getItem(nameOrId);
+            populateItemStats(item);
             rewards.items.push(item);
           });
         }
@@ -385,11 +366,14 @@ export default class Game extends React.Component {
         rewards,
       };
     });
+  }
 
-    function generateStat([min, max]) {
-      if (!max) { return min; }
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
+  endCombat = () => {
+    this.setState({gameState: 'dungeon'});
+  }
+
+  goToTown = () => {
+    this.setState({gameState: 'town'});
   }
 
   // TODO: This should get random treasures for the current level
@@ -402,71 +386,11 @@ export default class Game extends React.Component {
 
   }
 
-  heroAttack = (name = 'hero', target = 'monster') => {
-    const attacker = this.state[name];
-    const defender = this.state[target];
-    const criticalMult = this.checkCritical(attacker, defender) ? this.CRITICAL_HIT_MULTIPLIER : 1;
-    const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
-    const attackSound = this.state[name]['assetInfo']['attackSound'];
-    this.props.playSoundEffect(attackSound);
-
-    this.setState({
-      heroDidAttack: [...this.state.heroDidAttack, name],
-      [target]: {
-        ...this.state[target],
-        vitals: {
-          ...this.state[target]['vitals'],
-          health: this.state[target]['vitals']['health'] - damage,
-        },
-      },
-      [name]: {
-        ...this.state[name],
-        actionsDisabled: true,
-      },
-    });
-  }
-
-  heroWasReset = (names) => {
-    const newState = this.state;
-    names.forEach((name) => {
-      const index = newState.heroDidAttack.indexOf(name);
-      newState.heroDidAttack.splice(index, 1);
-    });
-    this.setState(newState);
-  }
-
-  calculatePercentagePoint = ([min, max], percentage) => {
-    if (!max) { return min; }
-    return Math.floor((max - min) * (percentage) * 0.01 + min);
-  }
-
-  checkCritical = (attacker, defender) => {
-    const attackerPoints = attacker.stats.dexterity + attacker.stats.agility;
-    const defenderPoints = defender.stats.dexterity + defender.stats.agility;
-    const randomizer = Math.random() * 100;
-    if (attackerPoints > defenderPoints) {
-      return randomizer > (100 - this.CRITICAL_HIT_CHANCE_IMPROVED);
-    }
-    return randomizer > (100 - this.CRITICAL_HIT_CHANCE);
-  }
-
-  calculateDamage = (baseAttack, baseDefence = 0, multiplier = 1) => {
-    const randomizer = Math.max(Math.random() * 100, 80) / 100;
-    const randomizer2 = Math.max(Math.random() * 100, 70) / 100;
-    let damage = Math.floor((baseAttack * randomizer * multiplier) - (baseDefence * randomizer2));
-    if (baseDefence !== 0 && damage < 0) {
-      damage = 0;
-    }
-    return damage;
-  }
-
   // Start a fight with the monster that was touche
-  startFight = (monster) => {
+  startFight = () => {
     // TODO: Remove when can start fights by touching enemies
     const monstersAvailable = this.state.monstersInLevel;
-    if (!monster) {
-      monster = this.state.monstersInLevel.pop();
-    }
+    const monster = monstersAvailable.pop();
 
     this.setState({
       gameState: 'combat',
@@ -479,187 +403,53 @@ export default class Game extends React.Component {
     });
   }
 
-  // Returns an item with give id or name
-  getItem(nameOrId) {
-    let item = null;
-    const id = parseInt(nameOrId, 10);
-    if (isNaN(id)) {
-      item = allItems.find((item) => item.name === nameOrId);
-    } else {
-      item = allItems.find((item) => item.id === id);
-    }
-    // Duplicate object so we avoid any funkiness
-    return JSON.parse(JSON.stringify(item));
-  }
-
-  restAtInn = (cost) => {
-    const maxHealth = this.state.hero.stats.health;
-    const maxMana = this.state.hero.stats.mana;
-
-    this.setState({
-      hero: {
-        ...this.state.hero,
-        vitals: {
-          ...this.state.hero.vitals,
-          health: maxHealth,
-          mana: maxMana,
-        }
-      },
-      inventory: [
-        {
-          quantity: this.state.inventory[0].quantity - cost,
-        },
-        ...this.state.inventory.slice(1),
-      ],
-      townAction: null,
-    });
+  showMenu = () => {
+    this.props.showMenu(this.state);
   }
 
   render() {
     const {
       hero,
       location,
-      gameState,
     } = this.state;
-
-    const {
-      showMenu,
-      saveGame,
-      playSoundEffect,
-      setBgMusic,
-    } = this.props;
-
-    /* Available Actions */
-    const actions = {
-      combat: [
-        {name: 'Attack', destructive: true, onClick: () => this.heroAttack() },
-        {name: 'Magic', destructive: true, disabled: true},
-        {name: 'Item', secondary: true, disabled: true},
-        {name: 'Run', secondary: true, onClick: () => this.setState({gameState: 'dungeon', monster: null}) },
-      ],
-      dungeon: [
-        {name: 'Inventory', disabled: true},
-        {name: 'Enter combat', destructive: true, onClick: () => this.startFight() },
-        {name: 'Go to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
-      ],
-      town: [
-        {name: 'Inn', onClick: () => this.setState({gameState: 'inn'}) },
-        {name: 'Blacksmith', onClick: () => this.setState({gameState: 'blacksmith'}) },
-        {name: 'Training Grounds', onClick: () => this.setState({gameState: 'training'}) },
-        {name: 'General Store', onClick: () => this.setState({gameState: 'generalStore'}) },
-        {name: 'Save Game', secondary: true, onClick: () => saveGame('savegame', this.state)},
-        {name: 'Main Menu', destructive: true, onClick: () => showMenu(this.state) },
-        {name: 'Go to dungeon', secondary: true, onClick: () => this.transitionToLevel("Cave Level 1")},
-      ],
-      blacksmith: [
-        {name: 'Buy', disabled: true},
-        {name: 'Sell', disabled: true},
-        {name: 'Enhance', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
-      ],
-      training: [
-        {name: 'Train Skills', disabled: true},
-        {name: 'Train Magic', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
-      ],
-      generalStore: [
-        {name: 'Buy', disabled: true},
-        {name: 'Sell', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
-      ],
-      inn: [
-        {name: 'Rest', onClick: () => this.setState({townAction: 'inn'})},
-        {name: 'Quests', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => this.setState({gameState: 'town'}) },
-      ],
-    }
-
-    const availableActions = actions[gameState];
-
-    let modalActions = null;
-    const modalContent = (() => {
-      switch (this.state.townAction) {
-        case 'inn': 
-          const cost = this.state.hero.stats.level * 15;
-          const playerCanRest = this.state.inventory[0].quantity >= cost;
-          modalActions = [
-            { 
-              name: 'Yes',
-              primary: true,
-              disabled: !playerCanRest,
-              tooltip: !playerCanRest && 'Not enough gold',
-              onClick: () => this.restAtInn(cost),
-            },
-            { name: 'No', destructive: true, onClick: () => this.setState({townAction: null}) },
-          ];
-          return <p>Would you like to rest for {cost} gold</p>;
-        default:
-          return;
-      }
-    })();
 
     return (
       <main className="Main">
         <FlexRow>
-          <Display 
+          <Display
             game={this.state}
             transitionToLevel={this.transitionToLevel}
             changeVitals={this.changeVitals}
+            changeStats={this.changeStats}
             heroDie={this.heroDie}
+            goToTown={this.goToTown}
+            startFight={this.startFight}
             acknowledgeRewards={this.acknowledgeRewards}
-            setActionsAvailable={this.setActionsAvailable}
-            heroWasReset={this.heroWasReset}
+            setActionsDisabled={this.setActionsDisabled}
+            setAvailableActions={this.setAvailableActions}
+            characterCreationCompleted={this.characterCreationCompleted}
             checkCritical={this.checkCritical}
-            calculateDamage={this.calculateDamage}
-            playSoundEffect={playSoundEffect}
-            setBgMusic={setBgMusic}
+            playSoundEffect={this.props.playSoundEffect}
+            saveGame={this.props.saveGame}
+            endCombat={this.endCombat}
+            showMenu={this.showMenu}
+            setBgMusic={this.props.setBgMusic}
           />
-          <Stats 
+          <Stats
+            heroName={hero.name}
             allStats={hero.stats}
             changeStats={this.changeStats}
             disableChange={this.state.gameState === 'combat'}
           />
         </FlexRow>
         <FlexRow>
-          <ActionList 
-            availableActions={availableActions}
+          <ActionList
+            availableActions={this.state.availableActions || []}
             disabled={this.state.hero.actionsDisabled}
             gold={this.state.inventory[0].quantity}
           />
-          <Vitals>
-            <Bar
-              label="Health"
-              current={hero.vitals.health}
-              max={hero.stats.health}
-              showStatus
-              lowColor={barColors.health.low}
-              highColor={barColors.health.high}
-            />
-            <Bar
-              label="Mana"
-              current={hero.vitals.mana}
-              max={hero.stats.mana}
-              showStatus
-              lowColor={barColors.mana.low}
-              highColor={barColors.mana.high} 
-            />
-            <Bar
-              label="Experience"
-              current={hero.vitals.exp}
-              max={hero.stats.nextExpLevel}
-              showStatus
-              highColor={barColors.exp.color}
-            />
-          </Vitals>
+          <Vitals hero={this.state.hero}/>
         </FlexRow>
-        <Modal
-          shown={this.state.townAction != null}
-          onClose={() => this.setState({townAction: null})}
-          actions={modalActions}
-          backgroundClickCloses
-        >
-          {modalContent}
-        </Modal>
       </main>
     );
   }

@@ -1,0 +1,38 @@
+{
+  "name": "Cave Level 1",
+  "type": "dungeon",
+  "size": {
+    "x": 400,
+    "y": 200
+  },
+  "monsters": {
+    "count": 40,
+    "maxDifficulty": 1,
+    "collections": ["basic"]
+  },
+  "treasures": {
+    "count": 10,
+    "level": [1],
+    "percentItems": 20,
+    "types": ["items", "weapons"]
+  },
+  "connections": [
+    {
+      "to": "town",
+      "position": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "to": "level2",
+      "position": {
+        "x": 400,
+        "y": 200
+      }
+    }
+  ],
+  "assetInfo": {
+    "battleBg": "cave"
+  }
+}

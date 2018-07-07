@@ -10,7 +10,8 @@ export default function ItemCard(props) {
     quantity,
     disabled,
     stats,
-    name
+    name,
+    index,
   } = props;
 
   const showStats = ['attack', 'defence', 'vitals'];
@@ -22,7 +23,7 @@ export default function ItemCard(props) {
   ].filter((cls) => cls).join(' ');
 
   return (
-    <div className={classes}>
+    <div className={classes} data-index={index}>
       {hasStatsToShow &&
         <Tooltip>
           {Object.entries(stats).map(([name, value]) => {
@@ -59,4 +60,5 @@ ItemCard.propTypes = {
   disabled: PropTypes.bool,
   stats: PropTypes.object,
   name: PropTypes.string,
-}
+  index: PropTypes.number,
+};
