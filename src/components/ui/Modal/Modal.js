@@ -88,7 +88,7 @@ export default class Modal extends React.PureComponent {
 
 Modal.propTypes = {
   shown: PropTypes.bool,
-  title: PropTypes.oneOf([PropTypes.string, PropTypes.node]),
+  title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   onClose: PropTypes.func.isRequired,
   actions: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string.isRequired,

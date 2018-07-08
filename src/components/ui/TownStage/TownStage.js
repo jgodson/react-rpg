@@ -102,11 +102,15 @@ export default class TownStage extends React.PureComponent {
       }
     })();
 
+    const modalTitle = this.state.townAction === 'save-game' 
+      ? "Select a slot to save your game" 
+      : null;
+
     return (
       <div className="TownStage">
         <Modal
-          title="Select a slot to save your game"
-          shown={this.state.townAction != null}
+          title={modalTitle}
+          shown={this.state.townAction !== null}
           onClose={this.closeModal}
           actions={modalActions}
           backgroundClickCloses

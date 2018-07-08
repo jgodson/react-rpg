@@ -62,6 +62,15 @@
   flex-wrap: wrap;
 }
 
+.BattleStage .combat-message {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  text-align: center;
+  color: var(--light);
+}
+
 .BattleStage .heros,
 .BattleStage .monsters {
   display: flex;

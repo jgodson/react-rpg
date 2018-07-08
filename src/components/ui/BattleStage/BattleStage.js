@@ -20,6 +20,7 @@ export default class BattleStage extends React.Component {
     // Set a timer to keep the battle moving
     this.battleTimer = setInterval(this.passTime, 200);
     this.attackTimers = {};
+    this.messageTimer = null;
 
     // Delay monster attacks once action bar is full to make it more fair
     this.MONSTER_ATTACK_DELAY = 1000;
@@ -50,31 +51,17 @@ export default class BattleStage extends React.Component {
         hero: this.calculateActionBarStart(hero.stats.agility),
         monster: this.calculateActionBarStart(monster.stats.agility),
       },
+      combatMessage: null,
     };
 
     const combatActions = [
-      {name: 'Attack', destructive: true, onClick: this.heroAttack },
-      {name: 'Magic', destructive: true, disabled: true},
-      {name: 'Item', secondary: true, disabled: true},
-      {name: 'Run', secondary: true, onClick: this.props.endCombat },
+      { name: 'Attack', destructive: true, onClick: this.heroAttack },
+      { name: 'Magic', destructive: true, disabled: true },
+      { name: 'Item', secondary: true, disabled: true },
+      { name: 'Run', secondary: true, onClick: this.retreat },
     ];
 
     this.props.setAvailableActions(combatActions);
-  }
-
-  retreat = () => {
-    const monsterPoints = this.props.game.monster.agility + this.props.game.monster.dexterity;
-    const heroPoints = this.props.game.monster.agility + this.props.game.monster.dexterity;
-    let chance = 0;
-    if (heroPoints > monsterPoints) {
-      chance = this.RETREAT_CHANCE_IMPROVED;
-    } else {
-      chance = this.RETREAT_CHANCE;
-    }
-
-    if (checkIfSuccessful(chance)) {
-      this.props.endCombat()
-    }
   }
 
   componentWillReceiveProps(newProps) {
@@ -110,11 +97,37 @@ export default class BattleStage extends React.Component {
     this.clearTimers();
   }
 
+  retreat = () => {
+    const monsterPoints = this.props.game.monster.agility + this.props.game.monster.dexterity;
+    const heroPoints = this.props.game.monster.agility + this.props.game.monster.dexterity;
+    let chance = 0;
+    if (heroPoints > monsterPoints) {
+      chance = this.RETREAT_CHANCE_IMPROVED;
+    } else {
+      chance = this.RETREAT_CHANCE;
+    }
+
+    if (checkIfSuccessful(chance)) {
+      this.props.endCombat()
+    } else {
+      this.props.setActionsDisabled('hero', true);
+      this.messageTimer = setTimeout(() => this.setState({combatMessage: null}), 2000);
+      this.setState({
+        combatMessage: 'Failed to retreat from combat',
+        actionTime: {
+          ...this.state.actionTime,
+          hero: 0,
+        }
+      });
+    }
+  }
+
   clearTimers = () => {
     clearInterval(this.battleTimer);
     Object.entries(this.attackTimers).forEach(([_, timer]) => {
       clearTimeout(timer);
     });
+    clearTimeout(this.messageTimer);
   }
 
   monsterAttack = (name = 'monster', target = 'hero') => {
@@ -150,7 +163,7 @@ export default class BattleStage extends React.Component {
     this.props.playSoundEffect(attackSound);
 
     this.props.setActionsDisabled('hero', true);
-    setTimeout(() => this.props.changeVitals('monster', {health: -damage}), 0);
+    this.props.changeVitals('monster', {health: -damage});
     this.setState({
       actionTime: {
         ...this.state.actionTime,
@@ -270,6 +283,7 @@ export default class BattleStage extends React.Component {
           }
           <Button onClick={() => this.props.heroDie()} primary>Continue</Button>
         </div>
+        {this.state.combatMessage && <div className="combat-message">{this.state.combatMessage}</div>}
         <div className="monsters">
           <Character
             imagesrc={monsterImages[monster.assetInfo.image]}

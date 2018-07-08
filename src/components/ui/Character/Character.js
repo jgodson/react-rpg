@@ -26,6 +26,10 @@ export default class Character extends React.PureComponent {
     }
   }
 
+  componentWillUnmount() {
+    clearTimeout(this.state.numberTimeout);
+  }
+
   render() {
     const { action, imagesrc, vitals, stats, show = ['action']} = this.props;
     const { damage } = this.state;
