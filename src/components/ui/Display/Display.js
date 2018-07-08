@@ -29,6 +29,7 @@ export default function Display(props) {
 
 Display.propTypes = {
   game: PropTypes.object.isRequired,
+  gameSlots: PropTypes.arrayOf(PropTypes.string),
   transitionToLevel: PropTypes.func.isRequired,
   changeVitals: PropTypes.func.isRequired,
   changeStats: PropTypes.func.isRequired,

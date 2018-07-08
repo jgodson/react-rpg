@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal } from '../../ui';
+import { Modal, GameList } from '../../ui';
 import './TownStage.css';
 
 export default class TownStage extends React.PureComponent {
@@ -9,34 +9,34 @@ export default class TownStage extends React.PureComponent {
     
     this.townActions = {
       town: [
-        {name: 'Inn', onClick: () => this.setState({location: 'inn'}) },
-        {name: 'Blacksmith', onClick: () => this.setState({location: 'blacksmith'}) },
-        {name: 'Training Grounds', onClick: () => this.setState({location: 'training'}) },
-        {name: 'General Store', onClick: () => this.setState({location: 'generalStore'}) },
-        {name: 'Save Game', secondary: true, onClick: () => this.props.saveGame('savegame', props.game)},
-        {name: 'Main Menu', destructive: true, onClick: () => this.props.showMenu(this.state) },
-        {name: 'Go to dungeon', secondary: true, onClick: () => this.props.transitionToLevel("level1")},
+        { name: 'Inn', onClick: () => this.setState({location: 'inn'}) },
+        { name: 'Blacksmith', onClick: () => this.setState({location: 'blacksmith'}) },
+        { name: 'Training Grounds', onClick: () => this.setState({location: 'training'}) },
+        { name: 'General Store', onClick: () => this.setState({location: 'generalStore'}) },
+        { name: 'Save Game', secondary: true, onClick: () => this.setState({townAction: 'save-game'}) },
+        { name: 'Main Menu', destructive: true, onClick: () => this.props.showMenu(this.state) },
+        { name: 'Go to dungeon', secondary: true, onClick: () => this.props.transitionToLevel("level1") },
       ],
       blacksmith: [
-        {name: 'Buy', disabled: true},
-        {name: 'Sell', disabled: true},
-        {name: 'Enhance', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
+        { name: 'Buy', disabled: true},
+        { name: 'Sell', disabled: true},
+        { name: 'Enhance', disabled: true},
+        { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       training: [
-        {name: 'Train Skills', disabled: true},
-        {name: 'Train Magic', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
+        { name: 'Train Skills', disabled: true},
+        { name: 'Train Magic', disabled: true},
+        { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       generalStore: [
-        {name: 'Buy', disabled: true},
-        {name: 'Sell', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
+        { name: 'Buy', disabled: true},
+        { name: 'Sell', disabled: true},
+        { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       inn: [
-        {name: 'Rest', onClick: () => this.setState({townAction: 'inn'})},
-        {name: 'Quests', disabled: true},
-        {name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
+        { name: 'Rest', onClick: () => this.setState({townAction: 'inn'}) },
+        { name: 'Quests', disabled: true},
+        { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
     }
 
@@ -72,7 +72,7 @@ export default class TownStage extends React.PureComponent {
     let modalActions = null;
     const modalContent = (() => {
       switch (this.state.townAction) {
-        case 'inn': 
+        case 'inn':
           const cost = game.hero.stats.level * 15;
           const playerCanRest = game.inventory[0].quantity >= cost;
           modalActions = [
@@ -86,6 +86,17 @@ export default class TownStage extends React.PureComponent {
             { name: 'No', destructive: true, onClick: this.closeModal },
           ];
           return <p>Would you like to rest for {cost} gold</p>;
+        case 'save-game':
+          modalActions = [
+            { name: 'Close', destructive: true, onClick: this.closeModal },
+          ];
+          return (
+            <GameList
+              gameSlots={this.props.gameSlots}
+              action="save"
+              currentData={this.props.game} 
+            />
+          );
         default:
           return;
       }
@@ -109,6 +120,6 @@ export default class TownStage extends React.PureComponent {
 TownStage.propTypes = {
   game: PropTypes.object.isRequired,
   transitionToLevel: PropTypes.func.isRequired,
-  saveGame: PropTypes.func.isRequired,
   showMenu: PropTypes.func.isRequired,
+  gameSlots: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

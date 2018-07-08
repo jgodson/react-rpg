@@ -1,0 +1,68 @@
+.GameList {
+  min-width: 250px;
+}
+
+.GameList .games {
+  display: flex;
+  flex-direction: column;
+}
+
+.GameList .game {
+  height: 100px;
+  display: flex;
+  justify-content: space-between;
+  font-family: inherit;
+  font-size: inherit;
+  border: 2px solid black;
+  border-radius: 6px;
+  background: var(--lighter);
+}
+
+.GameList .game.disabled {
+  background: var(--light);
+}
+
+.GameList .game + .game {
+  margin-top: 10px;
+}
+
+.GameList .game:last-child {
+  margin-bottom: 10px;
+}
+
+.GameList .game .name {
+  margin-top: -16px;
+  align-self: center;
+}
+
+.GameList .Character {
+  width: 95px;
+  margin-top: -9px;
+}
+
+.GameList .Character img {
+  width: 95px;
+}
+
+.GameList .Character .vitals {
+  top: -20px;
+}
+
+.GameList .Character .number {
+  display: none;
+}
+
+.GameList .game-info {
+  margin-top: 18px;
+  margin-right: 10px;
+}
+
+.GameList .gold img {
+  width: 40px;
+  margin-top: -10px;
+  margin-left: -7px;
+}
+
+.GameList .gold div {
+  margin-top: -10px;
+}

@@ -5,5 +5,5 @@
   "agility": "Small health and mana boost. Increases chance to run from combat. Increase action bar recharge rate. Increase effectiveness of agility skills.",
   "magic": "Large mana boost. Increase effectiveness of magic spells.",
   "attack": "Maximum damage dealt in combat",
-  "defence": "Decreases damage taken in combat"
+  "defence": "Reduces damage taken in combat"
 }

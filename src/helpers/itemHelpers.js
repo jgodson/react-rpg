@@ -15,6 +15,10 @@ function consumableInWorld(item) {
   return item.collections.includes('use:all') || item.collections.includes('use:world');
 }
 
+function canBeTreasure(item) {
+  return !item.collections.includes('no-treasure');
+}
+
 function canBePurchased(item) {
   return item.collections.includes('buy');
 }
@@ -66,6 +70,7 @@ export {
   isEquipment,
   consumableInBattle,
   consumableInWorld,
+  canBeTreasure,
   canBePurchased,
   canBeSold,
   isStartingItem,

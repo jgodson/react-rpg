@@ -18,6 +18,9 @@ export default class App extends React.Component {
     this.sfxAudio = React.createRef();
     this.root = document.getElementById('root');
 
+    // The names that we save our data into local storage under
+    this.GAME_SLOTS = ['savegame', 'savegame2', 'savegame3'];
+
     this.state = {
       bgPlay: true,
       musicName: 'menuMusic',
@@ -33,13 +36,26 @@ export default class App extends React.Component {
 
   componentWillMount() {
     // Check for save data
-    const saveData = this.loadData('savegame');
+    let saveData = null;
+    for (let i = 0; i < this.GAME_SLOTS.length; i++) {
+      const data = this.loadData(this.GAME_SLOTS[i]);
+      if (data) {
+        saveData = data;
+        break;
+      }
+    }
     if (saveData) {
       this.setState({gameData: saveData, hasSaveData: true});
     } else {
       this.setState({
         gameData: this.freshGameState(),
       });
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.backgroundName !== prevState.backgroundName) {
+      this.root.style.backgroundImage = `url(${gameBackgrounds[this.state.backgroundName]})`;
     }
   }
 
@@ -69,22 +85,8 @@ export default class App extends React.Component {
     };
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.backgroundName !== prevState.backgroundName) {
-      this.root.style.backgroundImage = `url(${gameBackgrounds[this.state.backgroundName]})`;
-    }
-  }
-
-  saveData = (game, data) => {
-    localStorage.setItem(game, JSON.stringify(data));
-  }
-
   loadData = (game) => {
     return JSON.parse(localStorage.getItem(game));
-  }
-
-  deleteData = (game) => {
-    localStorage.removeItem(game);
   }
 
   toggleMusic = () => {
@@ -151,16 +153,23 @@ export default class App extends React.Component {
     });
   }
 
-  gameStart = (newGame) => {
+  gameStart = (gameData) => {
     // Start the music (for Safari)
     if (this.state.bgPlay) {
       this.bgAudio.current.play();
     }
 
-    if (newGame) {
+    if (!gameData) {
       this.setState({
         gameData: this.freshGameState(),
         inProgress: true,
+      });
+    } else if (typeof gameData === 'object') {
+      this.setState({
+        gameData,
+        inProgress: true,
+        musicName: 'townMusic',
+        backgroundName: 'townBackground',
       });
     } else {
       this.setState({
@@ -187,10 +196,10 @@ export default class App extends React.Component {
 
         {inProgress 
         ?
-          <Game 
+          <Game
             gameData={gameData}
             showMenu={this.showMenu} 
-            saveGame={this.saveData}
+            gameSlots={this.GAME_SLOTS}
             changeLocation={this.changeLocation}
             playSoundEffect={this.playSoundEffect}
             setBgMusic={this.setBgMusic}
@@ -199,6 +208,7 @@ export default class App extends React.Component {
           <MainMenu 
             hasSaveData={hasSaveData}
             startGame={this.gameStart}
+            gameSlots={this.GAME_SLOTS}
             loggedIn={loggedIn}
           />
         }

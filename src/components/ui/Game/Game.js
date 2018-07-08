@@ -32,7 +32,6 @@ export default class Game extends React.Component {
       this.state = {
         ...gameData,
         availableActions: [],
-        heroDidAttack: [],
         level: {},
         monstersInLevel: [],
         treasuresInLevel: [],
@@ -428,12 +427,11 @@ export default class Game extends React.Component {
             setActionsDisabled={this.setActionsDisabled}
             setAvailableActions={this.setAvailableActions}
             characterCreationCompleted={this.characterCreationCompleted}
-            checkCritical={this.checkCritical}
             playSoundEffect={this.props.playSoundEffect}
-            saveGame={this.props.saveGame}
             endCombat={this.endCombat}
             showMenu={this.showMenu}
             setBgMusic={this.props.setBgMusic}
+            gameSlots={this.props.gameSlots}
           />
           <Stats
             heroName={hero.name}

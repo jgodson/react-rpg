@@ -17,6 +17,10 @@
   margin-bottom: 20px;
 }
 
+.MainMenu .menu-select .tooltiptext {
+  top: 50%;
+}
+
 .MainMenu .version {
   position: absolute;
   bottom: 10px;
