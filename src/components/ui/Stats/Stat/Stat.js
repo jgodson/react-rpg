@@ -45,7 +45,7 @@ export default class Stat extends React.PureComponent {
     const descriptionContent = description && (
       <React.Fragment>
         <Modal
-          title={name}
+          title={<h2>{name}</h2>}
           shown={this.state.modalShown}
           onClose={this.toggleModal}
           actions={this.modalActions}

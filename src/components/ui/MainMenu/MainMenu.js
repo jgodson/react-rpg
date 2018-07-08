@@ -85,6 +85,7 @@ export default class MainMenu extends React.PureComponent {
         <div className="version">V {version.version}</div>
         <Modal
           shown={this.state.modal !== null}
+          title="Select a game to load"
           onClose={this.closeModal}
           actions={modalActions}
           backgroundClickCloses

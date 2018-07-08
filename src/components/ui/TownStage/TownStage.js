@@ -105,6 +105,7 @@ export default class TownStage extends React.PureComponent {
     return (
       <div className="TownStage">
         <Modal
+          title="Select a slot to save your game"
           shown={this.state.townAction != null}
           onClose={this.closeModal}
           actions={modalActions}

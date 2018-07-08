@@ -53,8 +53,10 @@ export default class Modal extends React.PureComponent {
       if (actions && actions.length) {
         return (
           <React.Fragment>
-            {title && <h2 className="modal-title">{title}</h2>}
-            {children}
+            {title && <div className="modal-title">{title}</div>}
+            <div className="modal-content">
+              {children}
+            </div>
             <div className="actions">
               {actions.map((action) => (
                 <Button
@@ -86,7 +88,7 @@ export default class Modal extends React.PureComponent {
 
 Modal.propTypes = {
   shown: PropTypes.bool,
-  title: PropTypes.string,
+  title: PropTypes.oneOf([PropTypes.string, PropTypes.node]),
   onClose: PropTypes.func.isRequired,
   actions: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string.isRequired,

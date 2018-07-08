@@ -8,7 +8,7 @@
 
 .Modal {
   max-width: 1200px;
-  max-height: 800px;
+  max-height: 90%;
   min-width: 245px;
   min-height: 300px;
   left: 50%;
@@ -49,6 +49,14 @@
   opacity: 1;
 }
 
+.Modal .modal-title {
+  padding-bottom: 10px;
+}
+
+.Modal .modal-content {
+  overflow: auto;
+}
+
 .Modal .close-button {
   position: absolute;
   right: -16px;
@@ -78,6 +86,10 @@
 
 .Modal p {
   margin: 0.6em 0;
+}
+
+.Modal .actions {
+  padding-top: 10px;
 }
 
 .Modal .actions .Button {

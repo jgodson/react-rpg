@@ -63,8 +63,6 @@ export default class GameList extends React.PureComponent {
   render() {
     return (
       <div className="GameList">
-        <p>Select a game slot</p>
-        <div className="games">
           {Object.entries(this.state.games).map(([gameName, data]) => {
             return (
               <button 
@@ -98,7 +96,6 @@ export default class GameList extends React.PureComponent {
               </button>
             );
           })}
-        </div>
       </div>
     );
   }

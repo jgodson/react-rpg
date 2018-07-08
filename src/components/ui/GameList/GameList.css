@@ -1,8 +1,5 @@
 .GameList {
   min-width: 250px;
-}
-
-.GameList .games {
   display: flex;
   flex-direction: column;
 }
@@ -41,6 +38,7 @@
 }
 
 .GameList .Character img {
+  height: 95px;
   width: 95px;
 }
 
@@ -55,6 +53,7 @@
 .GameList .game-info {
   margin-top: 18px;
   margin-right: 10px;
+  font-size: 24px;
 }
 
 .GameList .gold img {
