@@ -1,8 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Bar } from '../../ui';
+import { Bar, Tooltip } from '../../ui';
 import barColors from '../../../helpers/barColors';
+import heroImages from '../../../assets/heros';
+import monsterImages from '../../../assets/monsters';
+import statInfo from '../../../assets/data/statInfo.json';
 import './Character.css';
+
+const ABRV = statInfo.abbreviations;
 
 export default class Character extends React.PureComponent {
   state = {
@@ -11,8 +16,8 @@ export default class Character extends React.PureComponent {
   };
 
   componentDidUpdate(prevProps) {
-    if (prevProps.vitals.health !== this.props.vitals.health) {
-      const damage = this.props.vitals.health - prevProps.vitals.health;
+    if (prevProps.character.vitals.health !== this.props.character.vitals.health) {
+      const damage = this.props.character.vitals.health - prevProps.character.vitals.health;
       clearTimeout(this.state.numberTimeout);
 
       const numberTimeout = setTimeout(() => {
@@ -31,7 +36,13 @@ export default class Character extends React.PureComponent {
   }
 
   render() {
-    const { action, imagesrc, vitals, stats, show = ['action']} = this.props;
+    const {
+      action,
+      character,
+      show = ['action'],
+      tooltip,
+    } = this.props;
+    const { vitals, stats } = character;
     const { damage } = this.state;
     const showHealth = show.includes("health");
     const showMana = show.includes("mana");
@@ -41,13 +52,30 @@ export default class Character extends React.PureComponent {
       damage > 0 && "heal",
       damage < 0 && "damage"
     ].filter((cls) => cls).join(' ');
-    const isDead = vitals.health <= 0;
+    const isDead = character.vitals.health <= 0;
+    const imagesrc = heroImages[character.assetInfo.image] || monsterImages[character.assetInfo.image];
 
     return (
       <div className={`Character ${isDead ? 'isDead' : ''}`}>
         <div className="image">
           <img src={imagesrc} alt="" />
         </div>
+        {tooltip &&
+          <Tooltip>
+            <div className="character-info">
+              <div>{character.name}</div>
+              {tooltip.map((stat) => {
+                const pieces = stat.split(':');
+                const statName = pieces[1] ? pieces[1] : stat;
+                return (
+                  <div>
+                    {ABRV[statName]}: {pieces[1] ? character[pieces[0]][pieces[1]] : character[stat]}
+                  </div>
+                );
+              })}
+            </div>
+          </Tooltip>
+        }
         <div className="vitals">
           <div className={numberClasses}>{this.state.damage}</div>
           {showHealth && 
@@ -86,15 +114,21 @@ export default class Character extends React.PureComponent {
 }
 
 Character.propTypes = {
-  imagesrc: PropTypes.string.isRequired,
+  character: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    assetInfo: PropTypes.shape({
+      image: PropTypes.string.isRequired,
+    }),
+    vitals: PropTypes.shape({
+      health: PropTypes.number.isRequired,
+      mana: PropTypes.number.isRequired,
+    }),
+    stats: PropTypes.shape({
+      health: PropTypes.number.isRequired,
+      mana: PropTypes.number.isRequired,
+    }),
+  }),
   action: PropTypes.number.isRequired,
-  stats: PropTypes.shape({
-    health: PropTypes.number.isRequired,
-    mana: PropTypes.number.isRequired,
-  }).isRequired,
-  vitals: PropTypes.shape({
-    health: PropTypes.number.isRequired,
-    mana: PropTypes.number.isRequired,
-  }).isRequired,
   show: PropTypes.arrayOf(PropTypes.string),
+  tooptip: PropTypes.arrayOf(PropTypes.string),
 };

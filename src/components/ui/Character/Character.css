@@ -1,4 +1,5 @@
 .Character {
+  position: relative;
   width: 120px;
   display: flex;
   flex-direction: column;
@@ -44,12 +45,22 @@
   width: 100%;
 }
 
+.Character .tooltiptext {
+  width: 70%;
+}
+
 .Character .Bar {
   width: 50%;
   margin: auto;
 }
 
-@media screen and (min-width: 400px) {
+@media screen and (min-width: 720px) {
+  .Character {
+    width: 200px;
+  }
+}
+
+@media screen and (min-width: 424px) and (max-width: 634px) {
   .Character {
     width: 200px;
   }

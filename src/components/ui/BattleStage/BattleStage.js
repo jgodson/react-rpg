@@ -8,8 +8,6 @@ import {
   InventoryList
 } from '../../ui';
 import battleStages from '../../../assets/battle-backgrounds';
-import heroImages from '../../../assets/heros';
-import monsterImages from '../../../assets/monsters';
 import {
   checkIfSuccessful,
   MINIMUM_DAMAGE_PERCENTAGE,
@@ -368,19 +366,16 @@ export default class BattleStage extends React.Component {
         {this.state.combatMessage && <div className="combat-message">{this.state.combatMessage}</div>}
         <div className="monsters">
           <Character
-            imagesrc={monsterImages[monster.assetInfo.image]}
-            stats={monster.stats}
-            vitals={monster.vitals}
+            character={monster}
             action={this.state.actionTime.monster}
             show={["action", "health"]}
+            tooltip={["stats:level"]}
           />
         </div>
         <div className="heros">
           <Character
-            imagesrc={heroImages[hero.assetInfo.image]}
-            stats={hero.stats}
+            character={hero}
             action={this.state.actionTime.hero}
-            vitals={hero.vitals}
             show={["action", "health", "mana"]}
           />
         </div>

@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import heroImages from '../../../assets/heros';
 import images from '../../../assets/items';
 import { Character } from '../../ui';
 import './GameList.css';
@@ -75,10 +74,8 @@ export default class GameList extends React.PureComponent {
                   ?
                     <React.Fragment>
                       <Character
-                        imagesrc={heroImages[data.hero.assetInfo.image]}
+                        character={data.hero}
                         action={0}
-                        stats={data.hero.stats}
-                        vitals={data.hero.vitals}
                         show={["health", "mana"]}
                       />
                       <div className="game-info">
