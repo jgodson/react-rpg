@@ -38,4 +38,5 @@ Display.propTypes = {
   acknowledgeRewards: PropTypes.func.isRequired,
   setBgMusic: PropTypes.func.isRequired,
   playSoundEffect: PropTypes.func.isRequired,
+  changeInventoryOrEquipment: PropTypes.func.isRequired,
 };

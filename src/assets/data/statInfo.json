@@ -2,8 +2,8 @@
   "strength": "Medium health booth & large attack boost. Increase effectiveness of stregth skills",
   "vitality": "Large health boost.",
   "dexterity": "Small health, attack and mana boost. Increase effectiveness of dexterity skills.",
-  "agility": "Small health and mana boost. Increases chance to run from combat. Increase action bar recharge rate. Increase effectiveness of agility skills.",
+  "agility": "Small health and mana boost. Increase action bar recharge rate. Increase effectiveness of agility skills.",
   "magic": "Large mana boost. Increase effectiveness of magic spells.",
-  "attack": "Maximum damage dealt in combat",
-  "defence": "Reduces damage taken in combat"
+  "attack": "Maximum damage dealt in combat.",
+  "defence": "Reduces damage taken in combat."
 }

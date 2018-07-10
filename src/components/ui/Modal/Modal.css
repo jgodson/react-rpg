@@ -3,11 +3,11 @@
   visibility: hidden;
   position: fixed;
   opacity: 0;
-  transition: opacity 300ms ease-in-out, visibility 0ms linear 300ms;
+  transition: opacity 300ms ease-in-out;
 }
 
 .Modal {
-  max-width: 1200px;
+  max-width: 800px;
   max-height: 90%;
   min-width: 245px;
   min-height: 300px;
@@ -26,6 +26,10 @@
   background: white;
 }
 
+.Modal.full-width {
+  width: 80%;
+}
+
 .ModalBackground {
   top: 0;
   left: 0;
@@ -38,7 +42,6 @@
 .ModalContainer.shown .ModalBackground,
 .ModalContainer.shown .Modal {
   visibility: visible;
-  transition-delay: 0ms;
 }
 
 .ModalContainer.shown .ModalBackground {
@@ -50,11 +53,17 @@
 }
 
 .Modal .modal-title {
-  padding: 10px 0;
+  padding: 8px 0;
+  width: 100%;
+  border-radius: 20px;
+  background: white;
+  z-index: 1;
 }
 
 .Modal .modal-content {
   overflow: auto;
+  padding-top: 60px;
+  margin-top: -60px;
 }
 
 .Modal .close-button {

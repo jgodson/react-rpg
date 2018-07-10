@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, GameList } from '../../ui';
+import { Modal, GameList, InventoryList } from '../../ui';
 import './TownStage.css';
 
 export default class TownStage extends React.PureComponent {
@@ -13,6 +13,7 @@ export default class TownStage extends React.PureComponent {
         { name: 'Blacksmith', onClick: () => this.setState({location: 'blacksmith'}) },
         { name: 'Training Grounds', onClick: () => this.setState({location: 'training'}) },
         { name: 'General Store', onClick: () => this.setState({location: 'generalStore'}) },
+        { name: 'Inventory', secondary: true, onClick: () => this.setState({townAction: 'inventory'}) },
         { name: 'Save Game', secondary: true, onClick: () => this.setState({townAction: 'save-game'}) },
         { name: 'Main Menu', destructive: true, onClick: () => this.props.showMenu(this.state) },
         { name: 'Go to dungeon', secondary: true, onClick: () => this.props.transitionToLevel("level1") },
@@ -70,6 +71,8 @@ export default class TownStage extends React.PureComponent {
     const { game } = this.props;
 
     let modalActions = null;
+    let modalTitle = null;
+    let fullWidth = null;
     const modalContent = (() => {
       switch (this.state.townAction) {
         case 'inn':
@@ -87,9 +90,8 @@ export default class TownStage extends React.PureComponent {
           ];
           return <p>Would you like to rest for {cost} gold</p>;
         case 'save-game':
-          modalActions = [
-            { name: 'Close', destructive: true, onClick: this.closeModal },
-          ];
+          modalTitle = 'Select a slot to save your game';
+          modalActions = [{ name: 'Close', destructive: true, onClick: this.closeModal }];
           return (
             <GameList
               gameSlots={this.props.gameSlots}
@@ -97,19 +99,27 @@ export default class TownStage extends React.PureComponent {
               currentData={this.props.game} 
             />
           );
+        case 'inventory':
+          modalTitle = <h2>Inventory</h2>;
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          fullWidth = true;
+          return (
+            <InventoryList
+              items={this.props.game.inventory}
+              capacity={this.props.game.hero.equipment.backpack.attributes.capacity}
+              changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
+            />
+          );
         default:
           return;
       }
     })();
 
-    const modalTitle = this.state.townAction === 'save-game' 
-      ? "Select a slot to save your game" 
-      : null;
-
     return (
       <div className="TownStage">
         <Modal
           title={modalTitle}
+          fullWidth={fullWidth}
           shown={this.state.townAction !== null}
           onClose={this.closeModal}
           actions={modalActions}

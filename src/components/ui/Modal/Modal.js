@@ -19,7 +19,7 @@ export default class Modal extends React.PureComponent {
     this.background.className = 'ModalBackground';
 
     this.modal = document.createElement('div');
-    this.modal.className = 'Modal';
+    this.modal.className = `Modal ${props.fullWidth ? 'full-width' : ''}`;
     if (props.customClasses) {
       this.modal.className += ` ${props.customClasses.join(' ')}`;
     }
@@ -31,6 +31,20 @@ export default class Modal extends React.PureComponent {
 
     this.container.appendChild(this.modal);
     this.container.appendChild(this.background);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.fullWidth !== prevProps.fullWidth) {
+      const modal = this.modal;
+      const isFullWidth = modal.className.indexOf('full-width') > -1;
+      const shouldBeFullWidth = this.props.fullWidth;
+
+      if (shouldBeFullWidth && !isFullWidth) {
+        modal.className += ' full-width';
+      } else if (!shouldBeFullWidth && isFullWidth) {
+        modal.className = modal.className.replace('full-width', '').trim();
+      }
+    }
   }
 
   componentDidMount() {
@@ -49,35 +63,31 @@ export default class Modal extends React.PureComponent {
       this.container.classList.remove('shown');
     }
 
-    const portalContent = (() => {
-      if (actions && actions.length) {
-        return (
-          <React.Fragment>
-            {title && <div className="modal-title">{title}</div>}
-            <div className="modal-content">
-              {children}
-            </div>
-            <div className="actions">
-              {actions.map((action) => (
-                <Button
-                  key={action.name}
-                  primary={action.primary}
-                  secondary={action.secondary}
-                  destructive={action.destructive}
-                  onClick={action.onClick}
-                  disabled={action.disabled}
-                  tooltip={action.tooltip}
-                >
-                  {action.name}
-                </Button>
-              ))}
-            </div>
-          </React.Fragment>
-        );
-      } else {
-        return children;
-      }
-    })();
+    const portalContent = (
+      <React.Fragment>
+        {title && <div className="modal-title">{title}</div>}
+        <div className="modal-content">
+          {children}
+        </div>
+        {actions &&
+          <div className="actions">
+            {actions.map((action) => (
+              <Button
+                key={action.name}
+                primary={action.primary}
+                secondary={action.secondary}
+                destructive={action.destructive}
+                onClick={action.onClick}
+                disabled={action.disabled}
+                tooltip={action.tooltip}
+              >
+                {action.name}
+              </Button>
+            ))}
+          </div>
+        }
+      </React.Fragment>
+    );
 
     return ReactDOM.createPortal(
       portalContent,
@@ -102,6 +112,7 @@ Modal.propTypes = {
       PropTypes.node
     ]),
   })),
+  fullWidth: PropTypes.bool,
   customClasses: PropTypes.arrayOf(PropTypes.string),
   backgroundClickCloses: PropTypes.bool,
 };

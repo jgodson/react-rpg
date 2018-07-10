@@ -83,7 +83,7 @@ export default class CharacterStage extends React.Component {
   selectItem = (evt) => {
     const cardElement = evt.target.className === "ItemCard" ? evt.target : evt.target.parentElement;
     const elementIndex = parseInt(cardElement.getAttribute('data-index'), 10);
-    if (typeof elementIndex !== 'number') { return; }
+    if (isNaN(elementIndex)) { return; }
     const selectedItems = this.state.selectedItems;
     if (selectedItems.includes(elementIndex)) {
       const arrayIndex = selectedItems.indexOf(elementIndex);
@@ -167,7 +167,7 @@ export default class CharacterStage extends React.Component {
           return (
             <React.Fragment>
               <p className="item-picking">Pick some items to help you on your journey</p>
-              <EventListener events={[{name: 'click', handler: this.selectItem}]}>
+              <EventListener events={[{ name: 'click', handler: this.selectItem }]}>
                 {this.availableItems.map((item, index) => {
                   return (
                     <ItemCard

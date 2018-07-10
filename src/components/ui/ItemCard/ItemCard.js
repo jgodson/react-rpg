@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Tooltip } from '../../ui';
+import { Tooltip, Button } from '../../ui';
 import itemImages from '../../../assets/items';
 import './ItemCard.css';
 
@@ -12,10 +12,12 @@ export default function ItemCard(props) {
     stats,
     name,
     index,
+    actions,
   } = props;
 
-  const showStats = ['attack', 'defence', 'vitals'];
+  const showStats = ['attack', 'defence', 'vitals', 'capacity'];
   const hasStatsToShow = stats && Object.keys(stats).some((stat) => showStats.includes(stat));
+  const isEmpty = !image && !name;
 
   const classes = [
     'ItemCard',
@@ -47,18 +49,42 @@ export default function ItemCard(props) {
           })}
         </Tooltip>
       }
-      <div>{name}</div>
-      {quantity > 1 && <div>{quantity}</div>}
-      <img src={itemImages[image]} alt={image} />
+      {!isEmpty &&
+        <React.Fragment>
+          <div>{name}</div>
+          {quantity > 1 && <div>{quantity}</div>}
+          <img src={itemImages[image]} alt={image} />
+        </React.Fragment>
+      }
+      {actions &&
+        <div className="item-actions">
+          {actions.map((action) => (
+            <Button
+              key={action.name}
+              onClick={action.onClick(index)}
+              primary={action.primary}
+              secondary={action.secondary}
+              destructive={action.destructive}
+              disabled={action.disabled}
+            >
+              {action.name}
+            </Button>
+          ))}
+        </div>
+      }
     </div>
   );
 }
 
 ItemCard.propTypes = {
-  image: PropTypes.string.isRequired,
-  quantity: PropTypes.number.isRequired,
+  image: PropTypes.string,
+  quantity: PropTypes.number,
   disabled: PropTypes.bool,
   stats: PropTypes.object,
   name: PropTypes.string,
   index: PropTypes.number,
+  actions: PropTypes.arrayOf(PropTypes.shape({
+    name: PropTypes.string,
+    onClick: PropTypes.func,
+  })),
 };

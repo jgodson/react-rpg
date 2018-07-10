@@ -79,7 +79,7 @@ export default class App extends React.Component {
           ...baseHeroStats.stats,
           nextExpLevel: heroLevels[1].requiredExp,
           statPoints: heroLevels[1].points,
-        }
+        },
       },
       monster: {},
     };
@@ -154,7 +154,7 @@ export default class App extends React.Component {
   }
 
   gameStart = (gameData) => {
-    // Start the music (for Safari)
+    // Start the music
     if (this.state.bgPlay) {
       this.bgAudio.current.play();
     }
@@ -166,18 +166,36 @@ export default class App extends React.Component {
       });
     } else if (typeof gameData === 'object') {
       this.setState({
-        gameData,
+        gameData: this.patchOldGame(gameData), // TODD: remove only patch old game portion
         inProgress: true,
         musicName: 'townMusic',
         backgroundName: 'townBackground',
       });
     } else {
       this.setState({
+        gameData: this.patchOldGame(this.state.gameData), // TODO: Can remove next update
         inProgress: true,
         musicName: 'townMusic',
         backgroundName: 'townBackground',
       });
     }
+  }
+
+  // TODO: REMOVE THIS STUFF. IT"S FOR PATCHING OLD GAMES
+  patchOldGame = (gameData) => {
+    if (!gameData.hero.equipment || !gameData.hero.equipment.weapon) {
+      const current = gameData.hero.equipment;
+      gameData.hero.equipment = {
+        helmet: (current && current.helmet) || null,
+        armor: (current && current.armor) || null,
+        weapon: (current && current.weapon) || null,
+        shield: (current && current.shield) || null,
+        boots: (current && current.boots) || null,
+        backpack: (current && current.backpack) || allItems.find((item) => item.id === 10005),
+      };
+    }
+    delete gameData.heroDidAttack;
+    return gameData;
   }
 
   render() {

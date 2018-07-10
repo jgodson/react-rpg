@@ -63,5 +63,18 @@
       "attack": [2,5]
     },
     "image": "hammer"
+  },
+  {
+    "id": 10005,
+    "name": "Basic Pack",
+    "rarity": 1,
+    "type": "backpack",
+    "collections": ["backpacks", "no-treasure"],
+    "description": "Can store 10 items",
+    "price": [250],
+    "attributes": {
+      "capacity": [10]
+    },
+    "image": "backpack"
   }
 ]

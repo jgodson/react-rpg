@@ -31,7 +31,7 @@
 }
 
 .BattleStage .modal p {
-  margin: 0.6em 0;
+  margin: 0.5em 0;
 }
 
 .BattleStage .modal.shown {
@@ -86,8 +86,4 @@
 .BattleStage .heros img {
   transform: scaleX(-1);
   margin-bottom: -25px;
-}
-
-.BattleStage .heros .number {
-
 }

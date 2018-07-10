@@ -1,6 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Character, ItemCard, Button } from '../../ui';
+import {
+  Character,
+  ItemCard,
+  Button,
+  Modal,
+  InventoryList
+} from '../../ui';
 import battleStages from '../../../assets/battle-backgrounds';
 import heroImages from '../../../assets/heros';
 import monsterImages from '../../../assets/monsters';
@@ -9,6 +15,7 @@ import {
   MINIMUM_DAMAGE_PERCENTAGE,
   MINIMUM_DEFENCE_PERCENTAGE
 } from '../../../helpers/battleHelpers';
+import { consumableInBattle } from '../../../helpers/itemHelpers';
 import './BattleStage.css';
 
 export default class BattleStage extends React.Component {
@@ -27,6 +34,7 @@ export default class BattleStage extends React.Component {
 
     // Minimum and improved chance of running from battle 
     this.RETREAT_CHANCE = 80;
+    // High agility and dexterity get you a better chance of retreating
     this.RETREAT_CHANCE_IMPROVED = 90;
 
     // Damage is multiplied by this amount when a critical hit occurs
@@ -36,9 +44,15 @@ export default class BattleStage extends React.Component {
     // High agility and dexterity get you a better chance of critical hit
     this.CRITICAL_HIT_CHANCE_IMPROVED = 3;
 
+    // Chance of hitting your target
+    this.HIT_CHANCE = 95;
+    // High agility and dexterity get you a better chance of hitting
+    this.HIT_CHANCE_IMPROVED = 98;
+
     this.state = {
       showRewards: false,
-      showDefault: false,
+      showDefeat: false,
+      showInventory: false,
       actionBoost: {
         hero: this.calculateActionBarTime(hero.stats.agility),
         monster: this.calculateActionBarTime(monster.stats.agility),
@@ -57,22 +71,12 @@ export default class BattleStage extends React.Component {
     const combatActions = [
       { name: 'Attack', destructive: true, onClick: this.heroAttack },
       { name: 'Magic', destructive: true, disabled: true },
-      { name: 'Item', secondary: true, disabled: true },
+      { name: 'Skills', destructive: true, disabled: true },
+      { name: 'Items', secondary: true, onClick: this.showInventory },
       { name: 'Run', secondary: true, onClick: this.retreat },
     ];
 
     this.props.setAvailableActions(combatActions);
-  }
-
-  componentWillReceiveProps(newProps) {
-    if (newProps.game.heroDidAttack.length > 0) {
-      const newState = this.state;
-      newProps.game.heroDidAttack.forEach((hero) => {
-        newState.actionTime[hero] = 0;
-      });
-      this.setState(newState);
-      this.props.heroWasReset(newProps.game.heroDidAttack);
-    }
   }
 
   componentDidUpdate() {
@@ -83,6 +87,11 @@ export default class BattleStage extends React.Component {
       this.props.playSoundEffect(monster.assetInfo.deathSound);
       this.props.setBgMusic('combatVictory', 1500);
       this.setState({showRewards: true});
+      const rewardsActions = [
+        { name: 'Items', secondary: true, onClick: this.showInventory },
+      ];
+      this.props.setAvailableActions(rewardsActions);
+      setTimeout(this.props.setActionsDisabled('hero', false), 0);
       this.clearTimers();
     } else if (hero.vitals.health <= 0 && !this.state.showDefeat) {
       this.props.playSoundEffect(hero.assetInfo.deathSound);
@@ -95,6 +104,17 @@ export default class BattleStage extends React.Component {
   componentWillUnmount() {
     // Clean up the battle timers (hero die will make this happen right now)
     this.clearTimers();
+  }
+
+  onItemAction = () => {
+    this.props.setActionsDisabled('hero', true);
+    this.setState({
+      showInventory: false,
+      actionTime: {
+        ...this.state.actionTime,
+        hero: 0,
+      },
+    });
   }
 
   retreat = () => {
@@ -122,6 +142,12 @@ export default class BattleStage extends React.Component {
     }
   }
 
+  showInventory = () => {
+    this.setState({showInventory: true});
+  }
+
+  closeModal = () => this.setState({showInventory: false});
+
   clearTimers = () => {
     clearInterval(this.battleTimer);
     Object.entries(this.attackTimers).forEach(([_, timer]) => {
@@ -138,18 +164,23 @@ export default class BattleStage extends React.Component {
     const criticalMult = this.checkCritical(attacker, defender) ? 5 : 1;
     const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
     this.props.playSoundEffect(attacker.assetInfo.attackSound);
-    this.props.changeVitals(target, {health: -damage});
 
-    this.setState({
-      actionTime: {
-        ...this.state.actionTime,
-        [name]: 0,
-      },
-      actionCharging: {
-        ...this.state.actionCharging,
-        [name]: true,
-      },
-    });
+    const hit = this.checkHit(attacker, defender);
+    if (hit) {
+      this.props.changeVitals(target, {health: -damage});
+      this.setState({
+        actionTime: {
+          ...this.state.actionTime,
+          [name]: 0,
+        },
+        actionCharging: {
+          ...this.state.actionCharging,
+          [name]: true,
+        },
+      });
+    } else {
+      this.missedAttack(name);
+    }
   }
 
   heroAttack = () => {
@@ -162,14 +193,29 @@ export default class BattleStage extends React.Component {
     const attackSound = game.hero.assetInfo.attackSound;
     this.props.playSoundEffect(attackSound);
 
+    const hit = this.checkHit(attacker, defender);
     this.props.setActionsDisabled('hero', true);
-    this.props.changeVitals('monster', {health: -damage});
-    this.setState({
-      actionTime: {
-        ...this.state.actionTime,
-        hero: 0,
-      }
-    });
+    if (hit) {
+      setTimeout(() => this.props.changeVitals('monster', {health: -damage}), 0);
+      this.setState({
+        actionTime: {
+          ...this.state.actionTime,
+          hero: 0,
+        },
+      });
+    } else {
+      this.missedAttack('hero');
+    }
+  }
+
+  checkHit = (attacker, defender) => {
+    const attackerPoints = attacker.stats.dexterity + attacker.stats.agility;
+    const defenderPoints = defender.stats.dexterity + defender.stats.agility;
+    const randomizer = Math.random() * 100;
+    if (attackerPoints > defenderPoints) {
+      return randomizer > (100 - this.HIT_CHANCE_IMPROVED);
+    }
+    return randomizer > (100 - this.HIT_CHANCE);
   }
 
   checkCritical = (attacker, defender) => {
@@ -202,6 +248,31 @@ export default class BattleStage extends React.Component {
       damage = 0;
     }
     return damage;
+  }
+
+  missedAttack = (name) => {
+    this.messageTimer = setTimeout(() => this.setState({combatMessage: null}), 2000);
+    if (name === 'hero') {
+      this.setState({
+        combatMessage: 'You missed!',
+        actionTime: {
+          ...this.state.actionTime,
+          [name]: 0,
+        }
+      });
+    } else {
+      this.setState({
+        combatMessage: 'Monster missed!',
+        actionTime: {
+          ...this.state.actionTime,
+          [name]: 0,
+        },
+        actionCharging: {
+          ...this.state.actionCharging,
+          [name]: true,
+        },
+      });
+    }
   }
 
   passTime = () => {
@@ -246,25 +317,36 @@ export default class BattleStage extends React.Component {
       inventory,
     } = game;
     const backgroundName = `${level.assetInfo.battleBg}Battle`;
+    const disableItemActions = this.state.showRewards ? ['equip'] : ['drop', 'equip'];
+
+    // Check if there is room in inventory for rewards
+    const capacity = hero.equipment.backpack.attributes.capacity;
+    const currentItems = inventory.length;
+    const monsterItems = monster.rewards.items.length;
+    const hasRoom = capacity >= currentItems + monsterItems;
+    const noRoomMessage = 
+      `You do not have room for some of these items, remove ${currentItems + monsterItems - capacity} items\
+      to make room or you will not receive these items.`;
 
     return (
       <div className="BattleStage" style={{ backgroundImage: `url("${battleStages[backgroundName]}")`}}>
         <div className={`modal ${this.state.showRewards ? 'shown': ''}`}>
           <h3>You defeated the monster!</h3>
           <p>Gained {monster.rewards.exp} experience!</p>
-          <p>The monster dropped some items!</p>
+          <p>{!hasRoom ? noRoomMessage : 'The monster dropped some items!'}</p>
           <div className="items">
               <ItemCard
                 image="coin"
                 quantity={monster.rewards.gold}
                 name="Gold"
               />
-            {monster.rewards.items.map((item) => {
+            {monster.rewards.items.map((item, index) => {
               return (
                 <ItemCard
                   image={item.image}
                   quantity={1}
                   stats={item.attributes}
+                  disabled={capacity < (index + 1 + currentItems)}
                   name={item.name}
                   key={item.id}
                 />
@@ -302,6 +384,22 @@ export default class BattleStage extends React.Component {
             show={["action", "health", "mana"]}
           />
         </div>
+        <Modal
+          title={<h2>Inventory</h2>}
+          shown={this.state.showInventory}
+          actions={[{ name: 'Close', primary: true, onClick: this.closeModal }]}
+          onClose={this.closeModal}
+          backgroundClickCloses
+          fullWidth
+        >
+          <InventoryList 
+            items={inventory}
+            disableFn={consumableInBattle}
+            disableItemActions={disableItemActions}
+            changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
+            onAction={this.onItemAction}
+          />
+        </Modal>
       </div>
     );
   }

@@ -19,6 +19,7 @@ import Modal from './Modal/Modal';
 import Tooltip from './Tooltip/Tooltip';
 import EventListener from './EventListener/EventListener';
 import GameList from './GameList/GameList';
+import InventoryList from './InventoryList/InventoryList';
 
 export {
   LoadingIcon,
@@ -42,4 +43,5 @@ export {
   Tooltip,
   EventListener,
   GameList,
+  InventoryList,
 }

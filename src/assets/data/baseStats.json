@@ -13,5 +13,15 @@
   },
   "vitals": {
     "exp": 0
+  },
+  "skills": [],
+  "magic": [],
+  "equipment": {
+    "helmet": null,
+    "armor": null,
+    "weapon": null,
+    "shield": null,
+    "boots": null,
+    "backpack": null
   }
 }

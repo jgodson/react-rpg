@@ -48,8 +48,10 @@ export default class Game extends React.Component {
             health: gameData.hero.stats.health + health,
             mana,
           },
-          skills: [],
-          magic: [],
+          equipment: {
+            ...gameData.hero.equipment,
+            backpack: getItem(10005),
+          }
         },
         townAction: null,
       };
@@ -154,24 +156,24 @@ export default class Game extends React.Component {
     }
   }
 
-  levelUp = (character = 'hero') => {
-    const leftoverExp = this.state.hero.stats.nextExpLevel - this.state.hero.vitals.exp;
+  levelUp = () => {
+    const leftoverExp = this.state.hero.vitals.exp - this.state.hero.stats.nextExpLevel;
     const nextLevel = this.state.hero.stats.level + 1;
     let {requiredExp = Number.MAX_SAFE_INTEGER, points = 0} = heroLevels[nextLevel] || {};
 
     this.setState({
-      [character]: {
-        ...this.state[character],
+      hero: {
+        ...this.state.hero,
         stats: {
-          ...this.state[character]['stats'],
+          ...this.state.hero.stats,
           level: nextLevel,
           nextExpLevel: requiredExp,
-          statPoints: this.state[character]['stats']['statPoints'] + points,
+          statPoints: this.state.hero.stats.statPoints + points,
         },
         vitals: {
-          ...this.state[character]['vitals'],
-          health: this.state[character]['stats']['health'],
-          mana: this.state[character]['stats']['mana'],
+          ...this.state.hero.vitals,
+          health: this.state.hero.stats.health,
+          mana: this.state.hero.stats.mana,
           exp: leftoverExp,
         },
       },
@@ -207,7 +209,18 @@ export default class Game extends React.Component {
     const nextLevelExp = this.state.hero.stats.nextExpLevel;
     const levelUp = currentExp + rewards.exp >= nextLevelExp;
 
-    // Add items that were wanted to hero's inventory
+    const capacity = this.state.hero.equipment.backpack.attributes.capacity;
+    const currentItems = this.state.inventory.length;
+    const monsterItems = this.state.monster.rewards.items.length;
+    const hasRoom = capacity >= currentItems + monsterItems;
+
+    if (!hasRoom) {
+      const take = currentItems + monsterItems - capacity;
+      const start = take > 1 ? monsterItems - take : 0;
+      rewards.items.splice(start, take);
+    }
+
+    // Add rewards + items to hero's inventory
     this.setState({
       monster: null,
       gameState: 'dungeon',
@@ -273,6 +286,62 @@ export default class Game extends React.Component {
     });
 
     this.setState(newState);
+  }
+
+  applyEquipmentChange = (action, item) => {
+    let attack = item.attributes.attack;
+    let defence = item.attributes.defence;
+
+    this.setState({
+      hero: {
+        ...this.state.hero,
+        stats: {
+          ...this.state.hero.stats,
+          attack: this.state.hero.stats.attack - attack,
+          defence: this.state.hero.stats.defence - defence,
+        }
+      }
+    });
+  }
+
+  changeInventoryOrEquipment = (changeType, indexItemType) => {
+    let newInventory = this.state.inventory;
+    let newEquipment = this.state.hero.equipment;
+    let item = null;
+    switch(changeType) {
+      case 'drop':
+        newInventory.splice(indexItemType, 1);
+        break;
+      case 'use':
+        console.log('Using Item');
+        item = this.state.inventory[indexItemType];
+        const {health, mana} = item.attributes.vitals;
+        this.changeVitals('hero', {health, mana});
+        newInventory.splice(indexItemType, 1);
+        break;
+      case 'add':
+        newInventory.push(indexItemType);
+        break;
+      case 'equip':
+        item = this.state.inventory[indexItemType];
+        const type = item.type;
+        newEquipment[type] = item;
+        newInventory.splice(indexItemType, 1);
+        this.applyEquipmentChange('equip', item);
+        break;
+      case 'unequip':
+        item = this.state.hero.equipment[indexItemType];
+        newEquipment[indexItemType] = null;
+        newInventory.push(item);
+        this.applyEquipmentChange('uneqip', item);
+        break;
+      default:
+        return;
+    }
+    setTimeout(() => this.setState({
+      inventory: newInventory,
+      equipment: newEquipment,
+    }), 0);
   }
 
   // Return an array of the right amount, and difficulty, of monsters for the current level
@@ -432,6 +501,7 @@ export default class Game extends React.Component {
             showMenu={this.showMenu}
             setBgMusic={this.props.setBgMusic}
             gameSlots={this.props.gameSlots}
+            changeInventoryOrEquipment={this.changeInventoryOrEquipment}
           />
           <Stats
             heroName={hero.name}
