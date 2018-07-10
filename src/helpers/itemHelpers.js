@@ -1,7 +1,7 @@
 import { generateStat, calculatePercentagePoint } from './misc';
 import allItems from '../assets/data/items.json';
 
-const EQUIPMENT_TYPES = ['weapon', 'armor', 'helmet', 'boots', 'gloves', 'shield'];
+const EQUIPMENT_TYPES = ['weapon', 'armor', 'helmet', 'boots', 'shield'];
 
 function isEquipment(item) {
   return EQUIPMENT_TYPES.includes(item.type);
@@ -29,6 +29,24 @@ function canBeSold(item) {
 
 function isStartingItem(item) {
   return item.collections.includes('starting-item');
+}
+
+function getEquipmentSummary(hero) {
+  const heroEquipment = hero.equipment;
+  const stats = {};
+  EQUIPMENT_TYPES.forEach((item) => {
+    if (heroEquipment[item]) {
+      Object.entries(heroEquipment[item].attributes).forEach(([stat, value]) => {
+        if (stats[stat]) {
+          stats[stat] += value;
+        } else {
+          stats[stat] = value;
+        }
+      });
+    }
+  });
+
+  return stats;
 }
 
 function populateItemStats(item) {
@@ -76,4 +94,5 @@ export {
   isStartingItem,
   populateItemStats,
   getItem,
+  getEquipmentSummary
 };

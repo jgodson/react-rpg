@@ -13,8 +13,10 @@ body {
   --lighter: #ececec;
   --dark: #2c2c2c;
   --darker: #0f0f0f;
+  --positive-change: #1e4c1c;
+  --negative-change: #bd0909;
 
   /* Number Colors */
-  --heal-number: #158f11;
+  --heal-number: #1abb14;
   --damage-number: #bd0909;
 }

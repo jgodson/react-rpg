@@ -16,6 +16,14 @@
   font-size: inherit;
 }
 
+.Stat .temp-value {
+  color: var(--positive-change);
+}
+
+.Stat .temp-value.decrease {
+  color: var(--negative-change);
+}
+
 .stat-modal .Button {
   margin-top: 15px;
 }

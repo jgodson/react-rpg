@@ -38,6 +38,7 @@ export default class Stat extends React.PureComponent {
       statKey,
       description,
       value,
+      tempValue,
       showButton,
       disableButton,
     } = this.props;
@@ -58,12 +59,17 @@ export default class Stat extends React.PureComponent {
       </React.Fragment>
     );
 
+    const tempChange = tempValue
+      ?
+        <span className={`temp-value ${tempValue < 0 ? 'decrease' : ''}`}>{` (${tempValue < 0 ? '-' : '+'}${tempValue})`}</span>
+      : null;
+
     return (
       <tr className="Stat">
         <td className="name-container">
           {descriptionContent ? descriptionContent : <span>{name}</span>}
         </td>
-        <td>{value}</td>
+        <td>{value}{tempChange}</td>
         <td>
           {showButton &&
             <Button secondary disabled={disableButton} onClick={this.adjustStat(statKey)}>

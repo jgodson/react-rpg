@@ -11,7 +11,11 @@ import statsMap from '../../../assets/data/statsMap';
 import levelData from '../../../assets/data/levels';
 import allMonsters from '../../../assets/data/monsters';
 import { checkIfSuccessful } from '../../../helpers/battleHelpers';
-import { populateItemStats, getItem } from '../../../helpers/itemHelpers';
+import { 
+  populateItemStats,
+  getItem,
+  getEquipmentSummary,
+} from '../../../helpers/itemHelpers';
 import { 
   generateStat,
   calculatePercentagePoint,
@@ -263,7 +267,15 @@ export default class Game extends React.Component {
       const hero = 'hero';
       const healthChange = statsMap[name] ? statsMap[name]['health'] || 0 : 0;
       const manaChange = statsMap[name] ? statsMap[name]['mana'] || 0 : 0;
-      const attackChange = statsMap[name] ? statsMap[name]['attack'] || 0 : 0;
+      // Account for attack and defence changes (equipment)
+      let attackChange = 0
+      if (name === 'attack') {
+        attackChange = change;
+      } else {
+        attackChange = statsMap[name] ? statsMap[name]['attack'] || 0 : 0;
+      }
+      statsMap[name] ? statsMap[name]['attack'] || 0 : 0;
+      const defenceChange = name === 'defence' ? change : 0;
 
       newState = {
         ...newState,
@@ -275,6 +287,7 @@ export default class Game extends React.Component {
             health: newState[hero]['stats']['health'] + healthChange,
             mana: newState[hero]['stats']['mana'] + manaChange,
             attack: newState[hero]['stats']['attack'] + attackChange,
+            defence: newState[hero]['stats']['defence'] + defenceChange,
           },
           vitals: {
             ...newState[hero]['vitals'],
@@ -289,19 +302,22 @@ export default class Game extends React.Component {
   }
 
   applyEquipmentChange = (action, item) => {
-    let attack = item.attributes.attack;
-    let defence = item.attributes.defence;
-
-    this.setState({
-      hero: {
-        ...this.state.hero,
-        stats: {
-          ...this.state.hero.stats,
-          attack: this.state.hero.stats.attack - attack,
-          defence: this.state.hero.stats.defence - defence,
-        }
-      }
-    });
+    if (action === 'equip') {
+      this.changeStats(
+        Object.entries(item.attributes).map(([name, change]) => {
+          return { name, change };
+        })
+      )
+    } else {
+      this.changeStats(
+        Object.entries(item.attributes).map(([name, change]) => { 
+          return {
+            name,
+            change: -change,
+          };
+        })
+      );
+    }
   }
 
   changeInventoryOrEquipment = (changeType, indexItemType) => {
@@ -313,7 +329,6 @@ export default class Game extends React.Component {
         newInventory.splice(indexItemType, 1);
         break;
       case 'use':
-        console.log('Using Item');
         item = this.state.inventory[indexItemType];
         const {health, mana} = item.attributes.vitals;
         this.changeVitals('hero', {health, mana});
@@ -325,15 +340,25 @@ export default class Game extends React.Component {
       case 'equip':
         item = this.state.inventory[indexItemType];
         const type = item.type;
+        const currentEquipment = newEquipment[type];
+        // Remove current equipment
+        if (currentEquipment) {
+          setTimeout(() => this.applyEquipmentChange('unequip', currentEquipment), 0);
+        }
+        // Equip new item
         newEquipment[type] = item;
-        newInventory.splice(indexItemType, 1);
+        if (currentEquipment) {
+          newInventory.splice(indexItemType, 1, currentEquipment);
+        } else {
+          newInventory.splice(indexItemType, 1);
+        }
         this.applyEquipmentChange('equip', item);
         break;
       case 'unequip':
-        item = this.state.hero.equipment[indexItemType];
+        item = newEquipment[indexItemType];
         newEquipment[indexItemType] = null;
         newInventory.push(item);
-        this.applyEquipmentChange('uneqip', item);
+        this.applyEquipmentChange('unequip', item);
         break;
       default:
         return;
@@ -508,6 +533,7 @@ export default class Game extends React.Component {
             allStats={hero.stats}
             changeStats={this.changeStats}
             disableChange={this.state.gameState === 'combat'}
+            tempStats={getEquipmentSummary(hero)}
           />
         </FlexRow>
         <FlexRow>

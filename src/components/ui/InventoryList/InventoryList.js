@@ -20,7 +20,7 @@ export default class InventoryList extends React.Component {
       { 
         name: 'Equip',
         primary: true,
-        disabled: true || (disableItemActions && disableItemActions.includes('equip')),
+        disabled: disableItemActions && disableItemActions.includes('equip'),
         onClick: this.equipItem 
       },
       { 
@@ -63,14 +63,12 @@ export default class InventoryList extends React.Component {
   }
 
   equipItem = (index) => () => {
-    console.log(`Equip ${index}`);
     this.props.changeInventoryOrEquipment('equip', index);
     this.setState({selected: null});
     this.props.onAction && this.props.onAction(index);
   }
 
   dropItem = (index) => () => {
-    console.log(`Drop ${index}`);
     this.props.changeInventoryOrEquipment('drop', index);
     this.setState({selected: null});
     this.props.onAction && this.props.onAction(index);

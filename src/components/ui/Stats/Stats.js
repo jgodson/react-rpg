@@ -5,7 +5,7 @@ import statDescriptions from '../../../assets/data/statInfo.json';
 import './Stats.css';
 
 export default function Stats(props) {
-  const { allStats, changeStats, disableChange } = props;
+  const { allStats, changeStats, disableChange, tempStats } = props;
 
   // Rename stats
   const statNames = {}
@@ -47,6 +47,7 @@ export default function Stats(props) {
                 description={statDescriptions[name]}
                 name={statName}
                 value={value}
+                tempValue={tempStats[name]}
                 showButton={!noButtons.includes(name) && hasPoints}
                 disableButton={!hasPoints || disableChange}
                 changeStats={changeStats}
@@ -64,4 +65,5 @@ Stats.propTypes = {
   allStats: PropTypes.object.isRequired,
   changeStats: PropTypes.func.isRequired,
   disableChange: PropTypes.bool,
+  tempStats: PropTypes.object.isRequired,
 };

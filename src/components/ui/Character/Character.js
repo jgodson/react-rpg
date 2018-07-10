@@ -68,7 +68,7 @@ export default class Character extends React.PureComponent {
                 const pieces = stat.split(':');
                 const statName = pieces[1] ? pieces[1] : stat;
                 return (
-                  <div>
+                  <div key={stat}>
                     {ABRV[statName]}: {pieces[1] ? character[pieces[0]][pieces[1]] : character[stat]}
                   </div>
                 );
