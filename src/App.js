@@ -185,17 +185,24 @@ export default class App extends React.Component {
   patchOldGame = (gameData) => {
     if (!gameData.hero.equipment || !gameData.hero.equipment.weapon) {
       const current = gameData.hero.equipment;
+      const backpack = allItems.find((item) => item.id === 10005);
       gameData.hero.equipment = {
         helmet: (current && current.helmet) || null,
         armor: (current && current.armor) || null,
         weapon: (current && current.weapon) || null,
         shield: (current && current.shield) || null,
         boots: (current && current.boots) || null,
-        backpack: (current && current.backpack) || allItems.find((item) => item.id === 10005),
+        backpack: populateBackPackData(backpack),
       };
     }
     delete gameData.heroDidAttack;
     return gameData;
+
+    function populateBackPackData(backpack) {
+      backpack.price = backpack.price[0];
+      backpack.attributes.capacity = backpack.attributes.capacity[0];
+      return backpack;
+    }
   }
 
   render() {
