@@ -32,5 +32,6 @@
 .ActionList .Button {
   flex: 1 1 0;
   min-width: 125px;
+  max-width: 300px;
   margin: 5px 10px;
 }
