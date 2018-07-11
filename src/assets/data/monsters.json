@@ -11,7 +11,8 @@
       "vitality": [2,4],
       "dexterity": [3,4],
       "agility": [1,3],
-      "magic": [1,2]
+      "magic": [1,2],
+      "defence": [3,5]
     },
     "rewards": {
       "gold": [7,9],
