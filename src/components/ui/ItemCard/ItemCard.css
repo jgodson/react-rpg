@@ -21,6 +21,18 @@
   width: 100%;
 }
 
+.ItemCard .icons {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.ItemCard .icons img {
+  width: auto;
+  vertical-align: bottom;
+  border-radius: 50%;
+}
+
 .ItemCard .item-actions {
   position: absolute;
   height: 100%;
@@ -28,5 +40,12 @@
   background: rgba(0, 0, 0, 0.8);
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: flex-end;
+}
+
+.ItemCard .tooltiptext {
+  top: 0 !important;
+  transform: translate(-50%, -55px) !important;
+  width: 95%;
+  max-height: 88px;
 }

@@ -17,11 +17,12 @@
 }
 
 .MainMenu .menu-select .tooltiptext {
-  top: 50%;
+  top: -50%;
+  width: 100%;
 }
 
 .MainMenu .version {
-  position: absolute;
+  position: fixed;
   bottom: 10px;
   right: 10px;
 }

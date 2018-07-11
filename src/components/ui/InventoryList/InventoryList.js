@@ -33,6 +33,10 @@ export default class InventoryList extends React.Component {
     
     const itemActions = {
       weapon: equipmentActions,
+      armor: equipmentActions,
+      helmet: equipmentActions,
+      shield: equipmentActions,
+      boots: equipmentActions,
       potion: [
         { 
           name: 'Use',
@@ -87,11 +91,9 @@ export default class InventoryList extends React.Component {
             return (
               <ItemCard
                 key={`${item ? item.name : 'empty'}-${index}`}
-                image={item && item.image}
+                item={item}
                 quantity={item ? item.quantity : 1}
-                stats={item && item.attributes}
                 disabled={!item || (disableFn && !disableFn(item))}
-                name={item && item.name}
                 index={item && index}
                 actions={this.state.selected === index ? this.state.actions : null}
               />

@@ -214,7 +214,6 @@ export default class App extends React.Component {
       inProgress,
       hasSaveData,
     } = this.state;
-
     return (
       <div className="App">
         <Header bgPlay={bgPlay} toggleMusic={this.toggleMusic} />

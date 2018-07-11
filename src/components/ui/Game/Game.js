@@ -15,6 +15,7 @@ import {
   populateItemStats,
   getItem,
   getEquipmentSummary,
+  isTwoHanded,
 } from '../../../helpers/itemHelpers';
 import { 
   generateStat,
@@ -54,13 +55,19 @@ export default class Game extends React.Component {
           },
           equipment: {
             ...gameData.hero.equipment,
-            backpack: getItem(10005),
+            backpack: populateBackPackData(getItem(10005)),
           }
         },
         townAction: null,
       };
     } else {
       this.state = gameData;
+    }
+
+    function populateBackPackData(backpack) {
+      backpack.price = backpack.price[0];
+      backpack.attributes.capacity = backpack.attributes.capacity[0];
+      return backpack;
     }
   }
 
@@ -265,8 +272,8 @@ export default class Game extends React.Component {
     let newState = this.state;
     changes.forEach(({name, change}) => {
       const hero = 'hero';
-      const healthChange = statsMap[name] ? statsMap[name]['health'] || 0 : 0;
-      const manaChange = statsMap[name] ? statsMap[name]['mana'] || 0 : 0;
+      const healthChange = change * (statsMap[name] ? statsMap[name]['health'] || 0 : 0);
+      const manaChange = change * (statsMap[name] ? statsMap[name]['mana'] || 0 : 0);
       // Account for attack and defence changes (equipment)
       let attackChange = 0
       if (name === 'attack') {
@@ -274,7 +281,6 @@ export default class Game extends React.Component {
       } else {
         attackChange = statsMap[name] ? statsMap[name]['attack'] || 0 : 0;
       }
-      statsMap[name] ? statsMap[name]['attack'] || 0 : 0;
       const defenceChange = name === 'defence' ? change : 0;
 
       newState = {
@@ -321,9 +327,13 @@ export default class Game extends React.Component {
   }
 
   changeInventoryOrEquipment = (changeType, indexItemType) => {
+    const inventoryCapacity = this.state.hero.equipment.backpack.attributes.capacity;
+    const currentItems = this.state.inventory.length;
+    const hasRoomToUnequip = currentItems + 1 <= inventoryCapacity;
     let newInventory = this.state.inventory;
     let newEquipment = this.state.hero.equipment;
     let item = null;
+
     switch(changeType) {
       case 'drop':
         newInventory.splice(indexItemType, 1);
@@ -341,6 +351,23 @@ export default class Game extends React.Component {
         item = this.state.inventory[indexItemType];
         const type = item.type;
         const currentEquipment = newEquipment[type];
+        if (type === 'weapon' && isTwoHanded(item)) {
+          const currentShield = newEquipment.shield;
+          if (currentShield) {
+            if (!hasRoomToUnequip) { return; }
+            setTimeout(() => this.applyEquipmentChange('unequip', currentShield), 0);
+            newInventory.push(currentShield);
+            newEquipment.shield = null;
+          }
+        } else if (type === 'shield') {
+          const currentWeapon = newEquipment.weapon;
+          if (currentWeapon && isTwoHanded(currentWeapon)) {
+            if (!hasRoomToUnequip) { return; }
+            setTimeout(() => this.applyEquipmentChange('unequip', currentWeapon), 0);
+            newInventory.push(currentWeapon);
+            newEquipment.weapon = null;
+          }
+        }
         // Remove current equipment
         if (currentEquipment) {
           setTimeout(() => this.applyEquipmentChange('unequip', currentEquipment), 0);
@@ -355,6 +382,7 @@ export default class Game extends React.Component {
         this.applyEquipmentChange('equip', item);
         break;
       case 'unequip':
+        if (!hasRoomToUnequip) { return; }
         item = newEquipment[indexItemType];
         newEquipment[indexItemType] = null;
         newInventory.push(item);
@@ -401,7 +429,7 @@ export default class Game extends React.Component {
         level: generateStat([minLevel, maxLevel]),
       };
       const levelMultiplier = (() => {
-        if (stats.level > 3) {
+        if (stats.level >= 3) {
           return stats.level / 2;
         } else if (stats.level === 2) {
           return 1.25;

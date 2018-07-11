@@ -14,6 +14,7 @@ import {
   MINIMUM_DEFENCE_PERCENTAGE
 } from '../../../helpers/battleHelpers';
 import { consumableInBattle } from '../../../helpers/itemHelpers';
+import allItems from '../../../assets/data/items.json';
 import './BattleStage.css';
 
 export default class BattleStage extends React.Component {
@@ -334,18 +335,15 @@ export default class BattleStage extends React.Component {
           <p>{!hasRoom ? noRoomMessage : 'The monster dropped some items!'}</p>
           <div className="items">
               <ItemCard
-                image="coin"
+                item={allItems[0]}
                 quantity={monster.rewards.gold}
-                name="Gold"
               />
             {monster.rewards.items.map((item, index) => {
               return (
                 <ItemCard
-                  image={item.image}
+                  item={item}
                   quantity={1}
-                  stats={item.attributes}
                   disabled={capacity < (index + 1 + currentItems)}
-                  name={item.name}
                   key={item.id}
                 />
               );

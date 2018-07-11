@@ -172,11 +172,9 @@ export default class CharacterStage extends React.Component {
                   return (
                     <ItemCard
                       key={`${item.name}-${index}`}
-                      image={item.image}
+                      item={item}
                       quantity={1}
-                      stats={item.attributes}
                       disabled={!this.state.selectedItems.includes(index)}
-                      name={item.name}
                       index={index}
                     />
                   );

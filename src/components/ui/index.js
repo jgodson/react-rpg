@@ -1,4 +1,3 @@
-import LoadingIcon from './LoadingIcon/LoadingIcon';
 import Header from './Header/Header';
 import Button from './Button/Button';
 import Game from './Game/Game';
@@ -20,9 +19,9 @@ import Tooltip from './Tooltip/Tooltip';
 import EventListener from './EventListener/EventListener';
 import GameList from './GameList/GameList';
 import InventoryList from './InventoryList/InventoryList';
+import Icon from './Icon/Icon';
 
 export {
-  LoadingIcon,
   Game,
   Header,
   Button,
@@ -44,4 +43,5 @@ export {
   EventListener,
   GameList,
   InventoryList,
+  Icon,
 }

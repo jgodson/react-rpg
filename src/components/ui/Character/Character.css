@@ -46,6 +46,7 @@
 }
 
 .Character .tooltiptext {
+  top: 0 !important;
   width: 70%;
 }
 

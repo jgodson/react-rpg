@@ -7,6 +7,10 @@ function isEquipment(item) {
   return EQUIPMENT_TYPES.includes(item.type);
 }
 
+function isTwoHanded(item) {
+  return item.collections.includes('two-handed');
+}
+
 function consumableInBattle(item) {
   return item.collections.includes('use:all') || item.collections.includes('use:battle');
 }
@@ -94,5 +98,6 @@ export {
   isStartingItem,
   populateItemStats,
   getItem,
-  getEquipmentSummary
+  getEquipmentSummary,
+  isTwoHanded,
 };
