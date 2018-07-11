@@ -403,6 +403,12 @@ export default class Game extends React.Component {
     let monsters = allMonsters.filter((monster) => {
       return monster.difficulty <= maxDifficulty && collections.every((col) => monster.collections.includes(col));
     });
+    
+    // Lets not do an infinite loop if no monsters found, just an error
+    if (monsters.length === 0) {
+      console.error('No monsters were found that match level specs');
+      return null;
+    }
 
     // Duplciate the monsters available until we have enough monsters for the level
     while (monsters.length < count) {
@@ -511,7 +517,8 @@ export default class Game extends React.Component {
   startFight = () => {
     // TODO: Remove when can start fights by touching enemies
     const monstersAvailable = this.state.monstersInLevel;
-    const monster = monstersAvailable.pop();
+    const randomIndex = Math.floor(Math.random() * monstersAvailable.length);
+    const monster = monstersAvailable.splice(randomIndex, 1)[0];
 
     this.setState({
       gameState: 'combat',
