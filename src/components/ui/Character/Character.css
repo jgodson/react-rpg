@@ -1,9 +1,21 @@
 .Character {
   position: relative;
-  width: 120px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
+  flex: 1 1 auto;
   transition: opacity 1000ms ease-in-out, visibility 0ms linear 1000ms;
+}
+
+.Character.size-medium {
+  flex: 2 1 auto;
+  min-width: 175px;
+}
+
+.Character.size-large {
+  min-width: 200px;
+  flex: 3 1 auto;
+  margin-left: -15px;
 }
 
 .Character.isDead {
@@ -53,16 +65,4 @@
 .Character .Bar {
   width: 50%;
   margin: auto;
-}
-
-@media screen and (min-width: 720px) {
-  .Character {
-    width: 200px;
-  }
-}
-
-@media screen and (min-width: 424px) and (max-width: 634px) {
-  .Character {
-    width: 200px;
-  }
 }

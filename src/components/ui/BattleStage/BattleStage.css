@@ -69,6 +69,7 @@
   right: 5px;
   text-align: center;
   color: var(--light);
+  z-index: 1;
 }
 
 .BattleStage .heros,
@@ -85,5 +86,11 @@
 
 .BattleStage .heros img {
   transform: scaleX(-1);
-  margin-bottom: -25px;
+  margin-bottom: -15px;
+}
+
+@media screen and (min-width: 400px) {
+  .BattleStage .heros img {
+    margin-bottom: -25px;
+  }
 }

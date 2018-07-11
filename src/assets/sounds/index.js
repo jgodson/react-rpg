@@ -6,6 +6,7 @@ import swordAttackSound from './sword_attack.wav';
 import biteAttackSound from './bite_attack.wav';
 import bowAttackSound from './bow_attack.wav';
 import staffAttackSound from './staff_attack.wav';
+import boss1AttackSound from './boss1_attack.wav';
 
 export default {
   goldSound,
@@ -16,4 +17,5 @@ export default {
   biteAttackSound,
   bowAttackSound,
   staffAttackSound,
+  boss1AttackSound,
 }

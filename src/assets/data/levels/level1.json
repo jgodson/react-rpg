@@ -7,8 +7,8 @@
   },
   "monsters": {
     "count": 40,
-    "maxDifficulty": 1,
-    "collections": ["basic"]
+    "maxDifficulty": 2,
+    "collections": ["bosses"]
   },
   "treasures": {
     "count": 10,

@@ -42,7 +42,7 @@ export default class Character extends React.PureComponent {
       show = ['action'],
       tooltip,
     } = this.props;
-    const { vitals, stats } = character;
+    const { vitals, stats, collections } = character;
     const { damage } = this.state;
     const showHealth = show.includes("health");
     const showMana = show.includes("mana");
@@ -54,9 +54,15 @@ export default class Character extends React.PureComponent {
     ].filter((cls) => cls).join(' ');
     const isDead = character.vitals.health <= 0;
     const imagesrc = heroImages[character.assetInfo.image] || monsterImages[character.assetInfo.image];
+    const classes = [
+      'Character',
+      isDead && 'isDead',
+      (collections && collections.includes('size-large')) && 'size-large',
+      (collections && collections.includes('size-medium')) && 'size-medium',
+    ].filter((cls) => cls).join(' ');
 
     return (
-      <div className={`Character ${isDead ? 'isDead' : ''}`}>
+      <div className={classes}>
         <div className="image">
           <img src={imagesrc} alt="" />
         </div>
