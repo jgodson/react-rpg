@@ -2,27 +2,37 @@
   {
     "id": 10000,
     "name": "Heal",
+    "price": 100,
     "cost": 10,
-    "required": {
+    "requirements": {
       "magic": 8
     },
     "attributes": {
       "vitals": {
         "health": 15
       }
+    },
+    "assetInfo": {
+      "image": "healing",
+      "sound": ""
     }
   },
   {
     "id": 10001,
     "name": "Fireball",
+    "price": 100,
     "cost": 5,
-    "required": {
+    "requirements": {
       "magic": 6
     },
     "attributes": {
       "vitals": {
         "health": -8
       }
+    },
+    "assetInfo": {
+      "image": "fireball",
+      "soudn": ""
     }
   }
 ]

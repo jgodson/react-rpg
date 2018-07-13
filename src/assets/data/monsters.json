@@ -33,7 +33,7 @@
     "description": "Big ugly dude",
     "id": 10001,
     "difficulty": 1,
-    "collections": ["basic", "size-medium"],
+    "collections": ["basic"],
     "stats": {
       "level": [1,5],
       "strength": [5,7],
@@ -111,8 +111,8 @@
     "assetInfo": {
       "image": "beetle1",
       "attackSound": "biteAttack",
-      "damageSound": "bettle1Damage",
-      "deathSound": "bettel1Death"
+      "damageSound": "beetleDamage",
+      "deathSound": "beetle1Death"
     }
   },
   {

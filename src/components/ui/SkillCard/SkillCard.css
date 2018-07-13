@@ -1,0 +1,40 @@
+.SkillCard {
+  height: 120px;
+  width: 80px;
+  margin: 5px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 1px 1px 1px 2px;
+  background: #dcdcdc;
+}
+
+.SkillCard.disabled {
+  background: #a2a2a2;
+}
+
+.SkillCard div {
+  text-align: center;
+}
+
+.SkillCard img {
+  width: 80%;
+  margin: auto;
+}
+
+.SkillCard .skill-actions {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.SkillCard .tooltiptext {
+  top: 0 !important;
+  transform: translate(-50%, -55px) !important;
+  width: 95%;
+  max-height: 88px;
+}

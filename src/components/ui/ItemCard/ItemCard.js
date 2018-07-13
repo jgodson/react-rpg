@@ -66,7 +66,7 @@ export default function ItemCard(props) {
       }
       {actions &&
         <div className="item-actions">
-          {actions.map((action) => (
+          {actions.map((action, index) => (
             <Button
               key={action.name}
               onClick={action.onClick(index)}

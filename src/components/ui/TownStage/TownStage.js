@@ -1,11 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, GameList, InventoryList } from '../../ui';
+import { Modal, GameList, InventoryList, SkillList } from '../../ui';
+import allMagic from '../../../assets/data/magic.json';
+import allSkills from '../../../assets/data/skills.json';
 import './TownStage.css';
 
 export default class TownStage extends React.PureComponent {
   constructor(props) {
     super(props);
+
+    this.INN_COST_PER_LEVEL = 10;
     
     this.townActions = {
       town: [
@@ -25,8 +29,8 @@ export default class TownStage extends React.PureComponent {
         { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       training: [
-        { name: 'Train Skills', disabled: true},
-        { name: 'Train Magic', disabled: true},
+        { name: 'Train Skills', primary: true, disabled: true},
+        { name: 'Train Magic', primary: true, onClick: () => this.setState({townAction: 'train-magic'}) },
         { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       generalStore: [
@@ -65,6 +69,11 @@ export default class TownStage extends React.PureComponent {
     this.setState({townAction: null});
   }
 
+  purchaseSkill = (type) => (index) => {
+    const purchasedSkill = type === 'magic' ? allMagic[index] : allSkills[index];
+    console.log(purchasedSkill);
+  }
+
   closeModal = () => this.setState({townAction: null});
 
   render() {
@@ -76,7 +85,7 @@ export default class TownStage extends React.PureComponent {
     const modalContent = (() => {
       switch (this.state.townAction) {
         case 'inn':
-          const cost = game.hero.stats.level * 15;
+          const cost = game.hero.stats.level * this.INN_COST_PER_LEVEL;
           const playerCanRest = game.inventory[0].quantity >= cost;
           modalActions = [
             {
@@ -108,6 +117,19 @@ export default class TownStage extends React.PureComponent {
               items={this.props.game.inventory}
               capacity={this.props.game.hero.equipment.backpack.attributes.capacity}
               changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
+            />
+          );
+        case 'train-magic':
+          modalTitle = <h2>Magic Tranining</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          fullWidth = true;
+          return (
+            <SkillList
+              skills={allMagic}
+              hero={game.hero}
+              gold={game.inventory[0].quantity}
+              onSkillAction={this.purchaseSkill('magic')}
+              isTraining={true}
             />
           );
         default:
