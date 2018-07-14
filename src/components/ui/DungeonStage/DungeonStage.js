@@ -1,49 +1,112 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, InventoryList } from '../../ui';
+import { Modal, InventoryList, SkillList } from '../../ui';
+import {
+  skillNotUseableOutsideBattle,
+  calculateSkillDamage,
+  calculateSkillEffect
+} from '../../../helpers/battleHelpers';
 import './DungeonStage.css';
 
 export default class DungeonStage extends React.Component {
   constructor(props) {
     super(props);
     const dungeonActions = [
-      {name: 'Inventory', secondary: true, onClick: this.showInventoryModal },
-      {name: 'Enter combat', destructive: true, onClick: this.props.startFight },
-      {name: 'Go to town', secondary: true, onClick: this.props.goToTown },
+      { name: 'Inventory', secondary: true, onClick: () => this.setState({showModal: 'inventory'}) },
+      { name: 'Skills', secondary: true, onClick: () => this.setState({showModal: 'skills'}) },
+      { name: 'Magic', secondary: true, onClick: () => this.setState({showModal: 'magic'}) },
+      { name: 'Enter combat', destructive: true, onClick: this.props.startFight },
+      { name: 'Go to town', secondary: true, onClick: this.props.goToTown },
     ];
 
     this.props.setAvailableActions(dungeonActions);
 
     this.state = {
-      showInventory: false,
+      showModal: false,
     };
   }
 
   closeModal = () => {
-    this.setState({showInventory: false})
+    this.setState({showModal: false})
   }
 
-  showInventoryModal = () => {
-    this.setState({showInventory: true});
+  useSkill = (skill) => {
+    const {
+      maxDamage,
+      manaCost,
+    } = calculateSkillEffect({attacker: this.props.game.hero, skill});
+
+    const healing = calculateSkillDamage(maxDamage);
+    this.props.changeVitals('hero', {health: healing, mana: -manaCost});
+    this.setState({showModal: false});
+  }
+
+  checkIfSkillDisabled = (skill) => {
+    const level = skill.level;
+    const cost = skill.cost;
+    const multiplier = skill.levels[level].multiplier;
+    const requiredMana = Math.ceil(cost * multiplier);
+    const notEnoughMana = !(this.props.game.hero.vitals.mana >= requiredMana);
+    return notEnoughMana || skillNotUseableOutsideBattle(skill);
   }
 
   render() {
+    const { game, changeInventoryOrEquipment } = this.props;
+    let modalActions = null;
+    let modalTitle = null;
+    let fullWidth = null;
+    const modalContent = (() => {
+      switch (this.state.showModal) {
+        case 'inventory':
+          modalTitle = <h2>Inventory</h2>;
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          fullWidth = true;
+          return (
+            <InventoryList 
+              items={game.inventory}
+              capacity={game.hero.equipment.backpack.attributes.capacity}
+              changeInventoryOrEquipment={changeInventoryOrEquipment}
+            />
+          );
+        case 'magic':
+          modalTitle = <h2>Magic</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          return (
+            <SkillList
+              skills={game.hero.magic}
+              hero={game.hero}
+              onSelectSkill={this.useSkill}
+              disableFn={this.checkIfSkillDisabled}
+            />
+          );
+        case 'skills':
+          modalTitle = <h2>Skills</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          return (
+            <SkillList
+              skills={game.hero.skills}
+              hero={game.hero}
+              onSelectSkill={this.useSkill}
+              disableFn={this.checkIfSkillDisabled}
+            />
+          );
+        default:
+          return;
+      }
+    })();
+
     return (
       <div className="DungeonStage">
         Yo, this here's the dungeon. We be implmenting some coo graphics at some point so you can actually do some shiznit
         <Modal
-          title={<h2>Inventory</h2>}
-          shown={this.state.showInventory}
-          actions={[{ name: 'Close', primary: true, onClick: this.closeModal }]}
+          title={modalTitle}
+          shown={this.state.showModal !== false}
+          actions={modalActions}
           onClose={this.closeModal}
           backgroundClickCloses
-          fullWidth
+          fullWidth={fullWidth}
         >
-          <InventoryList 
-            items={this.props.game.inventory}
-            capacity={this.props.game.hero.equipment.backpack.attributes.capacity}
-            changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
-          />
+          {modalContent}
         </Modal>
       </div>
     );

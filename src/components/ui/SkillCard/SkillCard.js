@@ -38,7 +38,7 @@ export default function MagicCard(props) {
     ?
       Object.entries(skill.requirements).every(([stat, value]) => {
         skillStatsMultiplier += hero.stats[stat];
-        return hero.stats[stat] >= Math.ceil(value * levelMultiplier); 
+        return hero.stats[stat] >= Math.ceil(value * nextSkillLevel); 
       })
     :
       true;
@@ -46,7 +46,7 @@ export default function MagicCard(props) {
   const requirementsTooltip = (() => {
     if (meetsRequirements) { return null; }
     return Object.entries(skill.requirements).map(([name, value]) => {
-      return <div key={name}>{Math.ceil(value * levelMultiplier)} {ABRV[name]}</div>
+      return <div key={name}>{Math.ceil(value * nextSkillLevel)} {ABRV[name]}</div>
     });
   })();
 

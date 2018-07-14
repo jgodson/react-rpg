@@ -3,6 +3,11 @@ import PropTypes from 'prop-types';
 import { Modal, GameList, InventoryList, SkillList } from '../../ui';
 import allMagic from '../../../assets/data/magic.json';
 import allSkills from '../../../assets/data/skills.json';
+import {
+  skillNotUseableOutsideBattle,
+  calculateSkillDamage,
+  calculateSkillEffect,
+} from '../../../helpers/battleHelpers';
 import './TownStage.css';
 
 export default class TownStage extends React.PureComponent {
@@ -18,6 +23,8 @@ export default class TownStage extends React.PureComponent {
         { name: 'Training Grounds', onClick: () => this.setState({location: 'training'}) },
         { name: 'General Store', onClick: () => this.setState({location: 'generalStore'}) },
         { name: 'Inventory', secondary: true, onClick: () => this.setState({townAction: 'inventory'}) },
+        { name: 'Skills', secondary: true, onClick: () => this.setState({townAction: 'skills'}) },
+        { name: 'Magic', secondary: true, onClick: () => this.setState({townAction: 'magic'}) },
         { name: 'Save Game', secondary: true, onClick: () => this.setState({townAction: 'save-game'}) },
         { name: 'Main Menu', destructive: true, onClick: () => this.props.showMenu(this.state) },
         { name: 'Go to dungeon', secondary: true, onClick: () => this.props.transitionToLevel("level1") },
@@ -69,6 +76,26 @@ export default class TownStage extends React.PureComponent {
     this.setState({townAction: null});
   }
 
+  useSkill = (skill) => {
+    const {
+      maxDamage,
+      manaCost,
+    } = calculateSkillEffect({attacker: this.props.game.hero, skill});
+
+    const healing = calculateSkillDamage(maxDamage);
+    this.props.changeVitals('hero', {health: healing, mana: -manaCost});
+    this.setState({townAction: null});
+  }
+
+  checkIfSkillDisabled = (skill) => {
+    const level = skill.level;
+    const cost = skill.cost;
+    const multiplier = skill.levels[level].multiplier;
+    const requiredMana = Math.ceil(cost * multiplier);
+    const notEnoughMana = !(this.props.game.hero.vitals.mana >= requiredMana);
+    return notEnoughMana || skillNotUseableOutsideBattle(skill);
+  }
+
   closeModal = () => this.setState({townAction: null});
 
   render() {
@@ -115,10 +142,31 @@ export default class TownStage extends React.PureComponent {
               changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
             />
           );
+        case 'magic':
+          modalTitle = <h2>Magic</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          return (
+            <SkillList
+              skills={game.hero.magic}
+              hero={game.hero}
+              onSelectSkill={this.useSkill}
+              disableFn={this.checkIfSkillDisabled}
+            />
+          );
+        case 'skills':
+          modalTitle = <h2>Skills</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          return (
+            <SkillList
+              skills={game.hero.skills}
+              hero={game.hero}
+              onSelectSkill={this.useSkill}
+              disableFn={this.checkIfSkillDisabled}
+            />
+          );
         case 'train-magic':
           modalTitle = <h2>Magic Tranining</h2>
           modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
-          fullWidth = true;
           return (
             <SkillList
               skills={allMagic}
@@ -131,7 +179,6 @@ export default class TownStage extends React.PureComponent {
         case 'train-skills':
           modalTitle = <h2>Skills Tranining</h2>
           modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
-          fullWidth = true;
           return (
             <SkillList
               skills={allSkills}
@@ -167,6 +214,7 @@ TownStage.propTypes = {
   game: PropTypes.object.isRequired,
   transitionToLevel: PropTypes.func.isRequired,
   showMenu: PropTypes.func.isRequired,
+  changeVitals: PropTypes.func.isRequired,
   learnOrUpgradeSkill: PropTypes.func.isRequired,
   gameSlots: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

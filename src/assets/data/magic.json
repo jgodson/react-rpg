@@ -4,6 +4,7 @@
     "name": "Heal",
     "type": "magic",
     "target": "self",
+    "collections": ["use:all"],
     "cost": 10,
     "level": 1,
     "requirements": {
@@ -11,7 +12,7 @@
     },
     "attributes": {
       "vitals": {
-        "health": 8
+        "health": 7
       }
     },
     "levels": {
@@ -34,6 +35,22 @@
       "5": {
         "price": 4000,
         "multiplier": 3
+      },
+      "6": {
+        "price": 7000,
+        "multiplier": 3.5
+      },
+      "7": {
+        "price": 10000,
+        "multiplier": 4
+      },
+      "8": {
+        "price": 15000,
+        "multiplier": 4.5
+      },
+      "9": {
+        "price": 20000,
+        "multiplier": 5
       }
     },
     "assetInfo": {
@@ -46,6 +63,7 @@
     "name": "Fireball",
     "type": "magic",
     "target": "single",
+    "collections": ["use:battle"],
     "cost": 5,
     "level": 1,
     "requirements": {
@@ -76,6 +94,22 @@
       "5": {
         "price": 4000,
         "multiplier": 3
+      },
+      "6": {
+        "price": 7000,
+        "multiplier": 3.5
+      },
+      "7": {
+        "price": 10000,
+        "multiplier": 4
+      },
+      "8": {
+        "price": 15000,
+        "multiplier": 4.5
+      },
+      "9": {
+        "price": 20000,
+        "multiplier": 5
       }
     },
     "assetInfo": {

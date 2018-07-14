@@ -4,6 +4,7 @@
     "name": "Heavy Attack",
     "type": "skills",
     "target": "single",
+    "collections": ["use:battle"],
     "cost": 5,
     "level": 1,
     "requirements": {
@@ -34,6 +35,22 @@
       "5": {
         "price": 4000,
         "multiplier": 3
+      },
+      "6": {
+        "price": 7000,
+        "multiplier": 3.5
+      },
+      "7": {
+        "price": 10000,
+        "multiplier": 4
+      },
+      "8": {
+        "price": 15000,
+        "multiplier": 4.5
+      },
+      "9": {
+        "price": 20000,
+        "multiplier": 5
       }
     },
     "assetInfo": {
@@ -46,6 +63,7 @@
     "name": "Dash Attack",
     "type": "skills",
     "target": "single",
+    "collections": ["use:battle"],
     "cost": 5,
     "level": 1,
     "requirements": {
@@ -77,6 +95,22 @@
       "5": {
         "price": 4000,
         "multiplier": 3
+      },
+      "6": {
+        "price": 7000,
+        "multiplier": 3.5
+      },
+      "7": {
+        "price": 10000,
+        "multiplier": 4
+      },
+      "8": {
+        "price": 15000,
+        "multiplier": 4.5
+      },
+      "9": {
+        "price": 20000,
+        "multiplier": 5
       }
     },
     "assetInfo": {

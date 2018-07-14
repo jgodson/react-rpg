@@ -54,20 +54,25 @@ export default class SkillList extends React.PureComponent {
     return(
       <div className="SkillList">
         <EventListener events={[{ name: 'click', handler: this.selectSkill }]}>
-          {skills.map((skill, index) => {
-            return (
-              <SkillCard
-                key={`${skill.name}`}
-                skill={skill}
-                hero={hero}
-                gold={gold}
-                isTraining={isTraining}
-                disabled={disableFn && disableFn(skill)}
-                index={index}
-                actions={this.state.selected === index ? this.state.actions : null}
-              />
-            );
-          })}
+          {skills.length > 0
+          ? 
+            skills.map((skill, index) => {
+              return (
+                <SkillCard
+                  key={`${skill.name}`}
+                  skill={skill}
+                  hero={hero}
+                  gold={gold}
+                  isTraining={isTraining}
+                  disabled={disableFn && disableFn(skill)}
+                  index={index}
+                  actions={this.state.selected === index ? this.state.actions : null}
+                />
+              );
+            })
+          :
+            <p>None yet! Learn some at the Training Grounds in town</p>
+        }
         </EventListener>
       </div>
     );

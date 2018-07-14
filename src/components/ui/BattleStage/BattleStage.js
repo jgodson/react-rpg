@@ -13,8 +13,9 @@ import {
   checkIfSuccessful,
   MINIMUM_DAMAGE_PERCENTAGE,
   MINIMUM_DEFENCE_PERCENTAGE,
-  MINIMUM_SKILL_PERCENTAGE,
-  MINIMUM_SKILL_DEFENCE_PERCENTAGE,
+  skillNotUseableInBattle,
+  calculateSkillDamage,
+  calculateSkillEffect,
 } from '../../../helpers/battleHelpers';
 import { consumableInBattle } from '../../../helpers/itemHelpers';
 import allItems from '../../../assets/data/items.json';
@@ -121,7 +122,7 @@ export default class BattleStage extends React.Component {
   onItemAction = () => {
     this.props.setActionsDisabled('hero', true);
     this.setState({
-      showInventory: false,
+      showModal: false,
       actionTime: {
         ...this.state.actionTime,
         hero: 0,
@@ -181,7 +182,7 @@ export default class BattleStage extends React.Component {
     const attacker = game[name];
     const defender = game[target];
     // TODO: Allow monster to use skills if they have them (some sort of AI going on here)
-    const criticalMult = this.checkCritical(attacker, defender) ? 5 : 1;
+    const criticalMult = this.checkCritical(attacker, defender) ? 3 : 1;
     const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
     this.props.playSoundEffect(attacker.assetInfo.attackSound);
 
@@ -270,34 +271,18 @@ export default class BattleStage extends React.Component {
     return damage;
   }
 
-  calculateSkillDamage = (skillDamage, skillDefence = 0) => {
-    const randomizer = Math.max(Math.random() * 100, MINIMUM_SKILL_PERCENTAGE) / 100;
-    const randomizer2 = Math.max(Math.random() * 100, MINIMUM_SKILL_DEFENCE_PERCENTAGE) / 100;
-    let damage = Math.floor((skillDamage * randomizer) - (skillDefence * randomizer2));
-    return damage;
-  }
-
   useSkill = (attackerName, defenderName, skill) => {
     const { game, changeVitals, setActionsDisabled } = this.props;
     const attacker = game[attackerName]
     const defender = game[defenderName];
-    const level = skill.level;
-    const levelMultiplier = skill.levels[level].multiplier;
-    const manaCost = Math.ceil(skill.cost * levelMultiplier);
-    let skillStatsTotal = 0;
-    Object.entries(skill.requirements).forEach(([stat, _]) => {
-      skillStatsTotal += attacker.stats[stat];
-    });
-    const baseDamage = skill.attributes.vitals.health;
-    let maxDamage = Math.ceil(baseDamage * skillStatsTotal * levelMultiplier);
+    const { maxDamage, skillDefence, manaCost } = calculateSkillEffect({attacker, defender, skill});
     let actualDamage = 0;
-    let skillDefence = skill.type === 'magic' ? defender.stats.magic : defender.stats.defence;
 
     if (skill.target === 'self') {
-      actualDamage = this.calculateSkillDamage(maxDamage);
+      actualDamage = calculateSkillDamage(maxDamage);
       changeVitals(attackerName, {health: actualDamage});
     } else {
-      actualDamage = this.calculateSkillDamage(maxDamage, skillDefence);
+      actualDamage = calculateSkillDamage(maxDamage, skillDefence);
       changeVitals(defenderName, {health: actualDamage});
     }
 
@@ -335,7 +320,8 @@ export default class BattleStage extends React.Component {
     const cost = skill.cost;
     const multiplier = skill.levels[level].multiplier;
     const requiredMana = Math.ceil(cost * multiplier);
-    return !(this.props.game.hero.vitals.mana >= requiredMana);
+    const notEnoughMana = !(this.props.game.hero.vitals.mana >= requiredMana);
+    return notEnoughMana || skillNotUseableInBattle(skill);
   }
 
   missedAttack = (name) => {
@@ -432,12 +418,11 @@ export default class BattleStage extends React.Component {
                 disableItemActions={disableItemActions}
                 changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
                 onAction={this.onItemAction}
-            />
+              />
             );
           case 'magic':
             modalTitle = <h2>Magic</h2>
             modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
-            fullWidth = true;
             return (
               <SkillList
                 skills={game.hero.magic}
@@ -449,7 +434,6 @@ export default class BattleStage extends React.Component {
           case 'skills':
             modalTitle = <h2>Skills</h2>
             modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
-            fullWidth = true;
             return (
               <SkillList
                 skills={game.hero.skills}
