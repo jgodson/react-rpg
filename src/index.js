@@ -13,7 +13,6 @@ const bugsnagClient = bugsnag({
   notifyReleaseStages: ['production'],
 });
 const ErrorBoundary = bugsnagClient.use(createPlugin(React));
-bugsnagClient.notify(new Error('Test error'))
 
 ReactDOM.render(
   <ErrorBoundary>
