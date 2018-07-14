@@ -3,8 +3,10 @@
   "version": "0.0.8",
   "author": "Jason Godson",
   "private": true,
-  "homepage" : "http://jgodson.github.io/react-rpg",
+  "homepage": "http://jgodson.github.io/react-rpg",
   "dependencies": {
+    "bugsnag-js": "^4.7.2",
+    "bugsnag-react": "^1.1.1",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-scripts": "1.1.4"
