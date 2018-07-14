@@ -29,7 +29,7 @@ export default class TownStage extends React.PureComponent {
         { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       training: [
-        { name: 'Train Skills', primary: true, disabled: true},
+        { name: 'Train Skills', primary: true, onClick: () => this.setState({townAction: 'train-skills'}) },
         { name: 'Train Magic', primary: true, onClick: () => this.setState({townAction: 'train-magic'}) },
         { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
@@ -46,11 +46,11 @@ export default class TownStage extends React.PureComponent {
     }
 
     this.props.setAvailableActions(this.townActions['town']);
-  }
 
-  state = {
-    townAction: null,
-    location: 'town'
+    this.state = {
+      townAction: null,
+      location: 'town'
+    };
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -69,11 +69,6 @@ export default class TownStage extends React.PureComponent {
     this.setState({townAction: null});
   }
 
-  purchaseSkill = (type) => (index) => {
-    const purchasedSkill = type === 'magic' ? allMagic[index] : allSkills[index];
-    console.log(purchasedSkill);
-  }
-
   closeModal = () => this.setState({townAction: null});
 
   render() {
@@ -87,6 +82,7 @@ export default class TownStage extends React.PureComponent {
         case 'inn':
           const cost = game.hero.stats.level * this.INN_COST_PER_LEVEL;
           const playerCanRest = game.inventory[0].quantity >= cost;
+          modalTitle = <h2>Inn</h2>;
           modalActions = [
             {
               name: 'Yes',
@@ -97,7 +93,7 @@ export default class TownStage extends React.PureComponent {
             },
             { name: 'No', destructive: true, onClick: this.closeModal },
           ];
-          return <p>Would you like to rest for {cost} gold</p>;
+          return <p>Would you like to rest for {cost} gold?</p>;
         case 'save-game':
           modalTitle = 'Select a slot to save your game';
           modalActions = [{ name: 'Close', destructive: true, onClick: this.closeModal }];
@@ -128,7 +124,20 @@ export default class TownStage extends React.PureComponent {
               skills={allMagic}
               hero={game.hero}
               gold={game.inventory[0].quantity}
-              onSkillAction={this.purchaseSkill('magic')}
+              onSkillAction={this.props.learnOrUpgradeSkill}
+              isTraining={true}
+            />
+          );
+        case 'train-skills':
+          modalTitle = <h2>Skills Tranining</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          fullWidth = true;
+          return (
+            <SkillList
+              skills={allSkills}
+              hero={game.hero}
+              gold={game.inventory[0].quantity}
+              onSkillAction={this.props.learnOrUpgradeSkill}
               isTraining={true}
             />
           );
@@ -158,5 +167,6 @@ TownStage.propTypes = {
   game: PropTypes.object.isRequired,
   transitionToLevel: PropTypes.func.isRequired,
   showMenu: PropTypes.func.isRequired,
+  learnOrUpgradeSkill: PropTypes.func.isRequired,
   gameSlots: PropTypes.arrayOf(PropTypes.string).isRequired,
 };

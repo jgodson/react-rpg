@@ -4,32 +4,48 @@ import { SkillCard, EventListener } from '../../ui';
 import './SkillList.css';
 
 export default class SkillList extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    this.actions = props.isTraining
-      ?
-        [
-          { name: 'Learn', primary: true, onClick: (index) => () => props.onSkillAction(index) }
-        ]
-      : 
-        null
-
-    this.state = {
-      selected: null,
-      actions: null,
-    };
-  }
+  state = {
+    selected: null,
+    actions: null,
+  };
 
   selectSkill = (evt) => {
-    const cardElement = evt.target.className === "MagicCard" ? evt.target : evt.target.parentElement;
+    const cardElement = evt.target.className === "SkillCard" ? evt.target : evt.target.parentElement;
     const elementIndex = parseInt(cardElement.getAttribute('data-index'), 10);
     if (isNaN(elementIndex)) { return; }
+    const isDisabled = cardElement.classList.contains('disabled');
+    if (isDisabled) { return; }
+
+    const selected = this.props.skills[elementIndex];
+    const type = cardElement.classList.contains('skills') ? 'skills' : 'magic';
+    const heroHasSkill = this.props.hero[type].findIndex((skill) => skill.id === selected.id) > -1;
+    const actions = this.props.isTraining
+    ?
+      [
+        { name: 'Details', disabled: true, primary: true },
+        { 
+          name: heroHasSkill ? 'Upgrade' : 'Learn',
+          primary: true,
+          onClick: this.onSkillAction
+        }
+      ]
+    : 
+      null
 
     this.setState({
       selected: elementIndex,
-      actions: this.actions,
+      actions,
     });
-    this.props.onSelectSkill && this.props.onSelectSkill(elementIndex);
+    const skill = this.props.skills[elementIndex];
+    if (this.props.onSelectSkill) {
+      this.props.onSelectSkill(skill);
+    }
+  }
+
+  onSkillAction = (index) => () => {
+    const skill = this.props.skills[index];
+    this.props.onSkillAction(skill);
+    this.setState({selected: null, actions: null});
   }
 
   render() {
@@ -45,8 +61,8 @@ export default class SkillList extends React.PureComponent {
                 skill={skill}
                 hero={hero}
                 gold={gold}
-                showPrice={isTraining}
-                disabled={hero.skills.find((skill) => skill.id) || (disableFn && disableFn(skill))}
+                isTraining={isTraining}
+                disabled={disableFn && disableFn(skill)}
                 index={index}
                 actions={this.state.selected === index ? this.state.actions : null}
               />
@@ -61,7 +77,7 @@ export default class SkillList extends React.PureComponent {
 SkillList.propTypes = {
   skills: PropTypes.arrayOf(PropTypes.object).isRequired,
   hero: PropTypes.object.isRequired,
-  gold: PropTypes.number.isRequired,
+  gold: PropTypes.number,
   disableFn: PropTypes.func,
   onSelectSkill: PropTypes.func,
   onSkillAction: PropTypes.func,

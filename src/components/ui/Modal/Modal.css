@@ -10,7 +10,7 @@
   max-width: 800px;
   max-height: 90%;
   min-width: 245px;
-  min-height: 300px;
+  min-height: 150px;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -102,6 +102,7 @@
 
 .Modal .actions {
   padding-top: 10px;
+  margin-top: auto;
 }
 
 .Modal .actions .Button {

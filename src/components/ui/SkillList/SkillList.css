@@ -3,3 +3,7 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.SkillList .skill-actions {
+  justify-content: space-between;
+}

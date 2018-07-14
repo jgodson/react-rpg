@@ -1,5 +1,7 @@
 const MINIMUM_DAMAGE_PERCENTAGE = 80;
 const MINIMUM_DEFENCE_PERCENTAGE = 70;
+const MINIMUM_SKILL_PERCENTAGE = 90;
+const MINIMUM_SKILL_DEFENCE_PERCENTAGE = 90;
 
 function checkIfSuccessful(percentChance) {
   return Math.random() * 100 < percentChance;
@@ -8,5 +10,7 @@ function checkIfSuccessful(percentChance) {
 export {
   MINIMUM_DAMAGE_PERCENTAGE,
   MINIMUM_DEFENCE_PERCENTAGE,
+  MINIMUM_SKILL_PERCENTAGE,
+  MINIMUM_SKILL_DEFENCE_PERCENTAGE,
   checkIfSuccessful,
 }

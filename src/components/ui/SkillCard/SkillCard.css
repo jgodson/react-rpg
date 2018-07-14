@@ -9,6 +9,14 @@
   background: #dcdcdc;
 }
 
+.SkillCard.magic {
+  background: #cee4ea; 
+}
+
+.SkillCard.skills {
+  background: #dcffdc
+}
+
 .SkillCard.disabled {
   background: #a2a2a2;
 }
@@ -18,8 +26,27 @@
 }
 
 .SkillCard img {
-  width: 80%;
-  margin: auto;
+  width: 60%;
+  margin: auto auto 5px auto;
+  padding-left: 20px;
+}
+
+.SkillCard .level-badge {
+  position: absolute;
+  width: 25px;
+  height: 20px;
+  bottom: 30px;
+  left: 0;
+  background: #ffff87;
+  padding: 5px;
+  border-radius: 50%;
+}
+
+.SkillCard .price img {
+  width: 25px;
+  margin: 0 -8px;
+  vertical-align: middle;
+  padding: 0;
 }
 
 .SkillCard .skill-actions {

@@ -5,13 +5,16 @@ import {
   ItemCard,
   Button,
   Modal,
-  InventoryList
+  InventoryList,
+  SkillList,
 } from '../../ui';
 import battleStages from '../../../assets/battle-backgrounds';
 import {
   checkIfSuccessful,
   MINIMUM_DAMAGE_PERCENTAGE,
-  MINIMUM_DEFENCE_PERCENTAGE
+  MINIMUM_DEFENCE_PERCENTAGE,
+  MINIMUM_SKILL_PERCENTAGE,
+  MINIMUM_SKILL_DEFENCE_PERCENTAGE,
 } from '../../../helpers/battleHelpers';
 import { consumableInBattle } from '../../../helpers/itemHelpers';
 import allItems from '../../../assets/data/items.json';
@@ -51,7 +54,7 @@ export default class BattleStage extends React.Component {
     this.state = {
       showRewards: false,
       showDefeat: false,
-      showInventory: false,
+      showModal: false,
       actionBoost: {
         hero: this.calculateActionBarTime(hero.stats.agility),
         monster: this.calculateActionBarTime(monster.stats.agility),
@@ -69,8 +72,18 @@ export default class BattleStage extends React.Component {
 
     const combatActions = [
       { name: 'Attack', destructive: true, onClick: this.heroAttack },
-      { name: 'Magic', destructive: true, disabled: true },
-      { name: 'Skills', destructive: true, disabled: true },
+      {
+        name: 'Magic',
+        destructive: true,
+        disabled: hero.magic.length === 0,
+        onClick: this.showMagic 
+      },
+      {
+        name: 'Skills',
+        destructive: true,
+        disabled: hero.skills.length === 0,
+        onClick: this.showSkills
+      },
       { name: 'Items', secondary: true, onClick: this.showInventory },
       { name: 'Run', secondary: true, onClick: this.retreat },
     ];
@@ -142,10 +155,18 @@ export default class BattleStage extends React.Component {
   }
 
   showInventory = () => {
-    this.setState({showInventory: true});
+    this.setState({showModal: 'inventory'});
   }
 
-  closeModal = () => this.setState({showInventory: false});
+  showMagic = () => {
+    this.setState({showModal: 'magic'});
+  }
+
+  showSkills = () => {
+    this.setState({showModal: 'skills'});
+  }
+
+  closeModal = () => this.setState({showModal: false});
 
   clearTimers = () => {
     clearInterval(this.battleTimer);
@@ -249,6 +270,74 @@ export default class BattleStage extends React.Component {
     return damage;
   }
 
+  calculateSkillDamage = (skillDamage, skillDefence = 0) => {
+    const randomizer = Math.max(Math.random() * 100, MINIMUM_SKILL_PERCENTAGE) / 100;
+    const randomizer2 = Math.max(Math.random() * 100, MINIMUM_SKILL_DEFENCE_PERCENTAGE) / 100;
+    let damage = Math.floor((skillDamage * randomizer) - (skillDefence * randomizer2));
+    return damage;
+  }
+
+  useSkill = (attackerName, defenderName, skill) => {
+    const { game, changeVitals, setActionsDisabled } = this.props;
+    const attacker = game[attackerName]
+    const defender = game[defenderName];
+    const level = skill.level;
+    const levelMultiplier = skill.levels[level].multiplier;
+    const manaCost = Math.ceil(skill.cost * levelMultiplier);
+    let skillStatsTotal = 0;
+    Object.entries(skill.requirements).forEach(([stat, _]) => {
+      skillStatsTotal += attacker.stats[stat];
+    });
+    const baseDamage = skill.attributes.vitals.health;
+    let maxDamage = Math.ceil(baseDamage * skillStatsTotal * levelMultiplier);
+    let actualDamage = 0;
+    let skillDefence = skill.type === 'magic' ? defender.stats.magic : defender.stats.defence;
+
+    if (skill.target === 'self') {
+      actualDamage = this.calculateSkillDamage(maxDamage);
+      changeVitals(attackerName, {health: actualDamage});
+    } else {
+      actualDamage = this.calculateSkillDamage(maxDamage, skillDefence);
+      changeVitals(defenderName, {health: actualDamage});
+    }
+
+    setTimeout(() => changeVitals(attackerName, {mana: -manaCost}), 0);
+    if (attackerName === 'hero') {
+      setTimeout(() => setActionsDisabled('hero', true), 0);
+      this.setState({
+        showModal: false,
+        actionTime: {
+          ...this.state.actionTime,
+          [attackerName]: 0,
+        },
+      });
+    } else {
+      this.setState({
+        showModal: false,
+        actionTime: {
+          ...this.state.actionTime,
+          [attackerName]: 0,
+        },
+        actionCharging: {
+          ...this.state.actionCharging,
+          [attackerName]: true,
+        },
+      });
+    }
+  }
+
+  skillSelected = (skill) => {
+    this.useSkill('hero', 'monster', skill);
+  }
+
+  checkIfSkillDisabled = (skill) => {
+    const level = skill.level;
+    const cost = skill.cost;
+    const multiplier = skill.levels[level].multiplier;
+    const requiredMana = Math.ceil(cost * multiplier);
+    return !(this.props.game.hero.vitals.mana >= requiredMana);
+  }
+
   missedAttack = (name) => {
     this.messageTimer = setTimeout(() => this.setState({combatMessage: null}), 2000);
     if (name === 'hero') {
@@ -327,6 +416,53 @@ export default class BattleStage extends React.Component {
       `You do not have room for some of these items, remove ${currentItems + monsterItems - capacity} items\
       to make room or you will not receive these items.`;
 
+      let modalActions = null;
+      let modalTitle = null;
+      let fullWidth = null;
+      const modalContent = (() => {
+        switch (this.state.showModal) {
+          case 'inventory':
+            modalTitle = <h2>Inventory</h2>;
+            modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+            fullWidth = true;
+            return (
+              <InventoryList 
+                items={inventory}
+                disableFn={consumableInBattle}
+                disableItemActions={disableItemActions}
+                changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
+                onAction={this.onItemAction}
+            />
+            );
+          case 'magic':
+            modalTitle = <h2>Magic</h2>
+            modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+            fullWidth = true;
+            return (
+              <SkillList
+                skills={game.hero.magic}
+                hero={game.hero}
+                onSelectSkill={this.skillSelected}
+                disableFn={this.checkIfSkillDisabled}
+              />
+            );
+          case 'skills':
+            modalTitle = <h2>Skills</h2>
+            modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+            fullWidth = true;
+            return (
+              <SkillList
+                skills={game.hero.skills}
+                hero={game.hero}
+                onSelectSkill={this.skillSelected}
+                disableFn={this.checkIfSkillDisabled}
+              />
+            );
+          default:
+            return;
+        }
+      })();
+
     return (
       <div className="BattleStage" style={{ backgroundImage: `url("${battleStages[backgroundName]}")`}}>
         <div className={`modal ${this.state.showRewards ? 'shown': ''}`}>
@@ -378,20 +514,14 @@ export default class BattleStage extends React.Component {
           />
         </div>
         <Modal
-          title={<h2>Inventory</h2>}
-          shown={this.state.showInventory}
-          actions={[{ name: 'Close', primary: true, onClick: this.closeModal }]}
+          title={modalTitle}
+          shown={this.state.showModal !== false}
+          actions={modalActions}
           onClose={this.closeModal}
           backgroundClickCloses
-          fullWidth
+          fullWidth={fullWidth}
         >
-          <InventoryList 
-            items={inventory}
-            disableFn={consumableInBattle}
-            disableItemActions={disableItemActions}
-            changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
-            onAction={this.onItemAction}
-          />
+          {modalContent}
         </Modal>
       </div>
     );

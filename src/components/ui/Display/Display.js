@@ -39,4 +39,5 @@ Display.propTypes = {
   setBgMusic: PropTypes.func.isRequired,
   playSoundEffect: PropTypes.func.isRequired,
   changeInventoryOrEquipment: PropTypes.func.isRequired,
+  learnOrUpgradeSkill: PropTypes.func.isRequired,
 };

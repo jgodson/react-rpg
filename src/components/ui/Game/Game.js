@@ -78,8 +78,6 @@ export default class Game extends React.Component {
   }
 
   characterCreationCompleted = ({selectedItems, assetInfo, name}) => {
-    // TODO: Probably equip items automatically. There could be multiples of each time of equipment
-    // TODO: So need to validate to make sure that it can all be equipped
     this.setState({
       gameState: 'town',
       hero: {
@@ -344,9 +342,6 @@ export default class Game extends React.Component {
         this.changeVitals('hero', {health, mana});
         newInventory.splice(indexItemType, 1);
         break;
-      case 'add':
-        newInventory.push(indexItemType);
-        break;
       case 'equip':
         item = this.state.inventory[indexItemType];
         const type = item.type;
@@ -395,6 +390,22 @@ export default class Game extends React.Component {
       inventory: newInventory,
       equipment: newEquipment,
     }), 0);
+  }
+
+  learnOrUpgradeSkill = (skill) => {
+    const newState = this.state;
+    const skillType = skill.type;
+    const currentSkillIndex = this.state.hero[skillType].findIndex((curSkill) => curSkill.id === skill.id);
+
+    const curretSkillLevel = currentSkillIndex > -1 ? this.state.hero[skillType][currentSkillIndex].level : 0;
+    const price = skill.levels[curretSkillLevel + 1].price;
+    if (currentSkillIndex > -1) {
+      newState.hero[skillType][currentSkillIndex].level += 1;
+    } else {
+      newState.hero[skillType].push(skill);
+    }
+    newState.inventory[0].quantity -= price;
+    this.setState(newState);
   }
 
   // Return an array of the right amount, and difficulty, of monsters for the current level
@@ -562,6 +573,7 @@ export default class Game extends React.Component {
             setBgMusic={this.props.setBgMusic}
             gameSlots={this.props.gameSlots}
             changeInventoryOrEquipment={this.changeInventoryOrEquipment}
+            learnOrUpgradeSkill={this.learnOrUpgradeSkill}
           />
           <Stats
             heroName={hero.name}

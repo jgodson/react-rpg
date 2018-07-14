@@ -2,27 +2,86 @@
   {
     "id": 10000,
     "name": "Heavy Attack",
+    "type": "skills",
+    "target": "single",
     "cost": 5,
-    "required": {
+    "level": 1,
+    "requirements": {
       "strength": 6
-    },
-    "attributes": {
-      "vitals": {
-        "health": -8
-      }
-    }
-  },
-  {
-    "id": 10001,
-    "name": "Quick Attack",
-    "cost": 3,
-    "required": {
-      "dexterity": 6
     },
     "attributes": {
       "vitals": {
         "health": -6
       }
+    },
+    "levels": {
+      "1": {
+        "price": 100,
+        "multiplier": 1
+      },
+      "2": {
+        "price": 300,
+        "multiplier": 1.5
+      },
+      "3": {
+        "price": 1000,
+        "multiplier": 2
+      },
+      "4": {
+        "price": 2000,
+        "multiplier": 2.5
+      },
+      "5": {
+        "price": 4000,
+        "multiplier": 3
+      }
+    },
+    "assetInfo": {
+      "image": "swordSkill1",
+      "sound": ""
+    }
+  },
+  {
+    "id": 10001,
+    "name": "Dash Attack",
+    "type": "skills",
+    "target": "single",
+    "cost": 5,
+    "level": 1,
+    "requirements": {
+      "dexterity": 6,
+      "agility": 8
+    },
+    "attributes": {
+      "vitals": {
+        "health": -4
+      }
+    },
+    "levels": {
+      "1": {
+        "price": 100,
+        "multiplier": 1
+      },
+      "2": {
+        "price": 300,
+        "multiplier": 1.5
+      },
+      "3": {
+        "price": 1000,
+        "multiplier": 2
+      },
+      "4": {
+        "price": 2000,
+        "multiplier": 2.5
+      },
+      "5": {
+        "price": 4000,
+        "multiplier": 3
+      }
+    },
+    "assetInfo": {
+      "image": "dash",
+      "sound": ""
     }
   }
 ]
