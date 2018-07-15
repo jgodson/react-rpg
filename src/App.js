@@ -10,13 +10,18 @@ import gameSounds from './assets/sounds';
 import baseHeroStats from './assets/data/baseStats';
 import heroLevels from './assets/data/heroLevels';
 import allItems from './assets/data/items';
+import './App.css';
 
 export default class App extends React.Component {
   constructor() {
     super();
     this.bgAudio = React.createRef();
     this.sfxAudio = React.createRef();
-    this.root = document.getElementById('root');
+
+    // Add portal container to document
+    const portalContainer = document.createElement('div');
+    portalContainer.id = 'PortalContainer';
+    document.body.appendChild(portalContainer);
 
     // The names that we save our data into local storage under
     this.GAME_SLOTS = ['savegame', 'savegame2', 'savegame3'];
@@ -30,8 +35,6 @@ export default class App extends React.Component {
       loggedIn: false,
       hasSaveData: false,
     };
-
-    this.root.style.backgroundImage = `url(${gameBackgrounds[this.state.backgroundName]})`;
   }
 
   componentWillMount() {
@@ -50,12 +53,6 @@ export default class App extends React.Component {
       this.setState({
         gameData: this.freshGameState(),
       });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.backgroundName !== prevState.backgroundName) {
-      this.root.style.backgroundImage = `url(${gameBackgrounds[this.state.backgroundName]})`;
     }
   }
 
@@ -216,34 +213,36 @@ export default class App extends React.Component {
     } = this.state;
     return (
       <div className="App">
-        <Header bgPlay={bgPlay} toggleMusic={this.toggleMusic} />
+        <div className="bgContainer" style={{backgroundImage: `url(${gameBackgrounds[this.state.backgroundName]})`}}>
+          <Header bgPlay={bgPlay} toggleMusic={this.toggleMusic} />
 
-        {inProgress 
-        ?
-          <Game
-            gameData={gameData}
-            showMenu={this.showMenu} 
-            gameSlots={this.GAME_SLOTS}
-            changeLocation={this.changeLocation}
-            playSoundEffect={this.playSoundEffect}
-            setBgMusic={this.setBgMusic}
+          {inProgress 
+          ?
+            <Game
+              gameData={gameData}
+              showMenu={this.showMenu} 
+              gameSlots={this.GAME_SLOTS}
+              changeLocation={this.changeLocation}
+              playSoundEffect={this.playSoundEffect}
+              setBgMusic={this.setBgMusic}
+            />
+          :
+            <MainMenu 
+              hasSaveData={hasSaveData}
+              startGame={this.gameStart}
+              gameSlots={this.GAME_SLOTS}
+              loggedIn={loggedIn}
+            />
+          }
+          
+          <audio
+            src={gameMusic[musicName]}
+            ref={this.bgAudio}
+            loop
+            autoPlay={bgPlay}
           />
-        :
-          <MainMenu 
-            hasSaveData={hasSaveData}
-            startGame={this.gameStart}
-            gameSlots={this.GAME_SLOTS}
-            loggedIn={loggedIn}
-          />
-        }
-        
-        <audio
-          src={gameMusic[musicName]}
-          ref={this.bgAudio}
-          loop
-          autoPlay={bgPlay}
-        />
-        <audio ref={this.sfxAudio} />
+          <audio ref={this.sfxAudio} />
+        </div>
       </div>
     );
   }

@@ -201,10 +201,6 @@ export default class BattleStage extends React.Component {
           ...this.state.actionTime,
           [name]: 0,
         },
-        actionCharging: {
-          ...this.state.actionCharging,
-          [name]: true,
-        },
       });
     } else {
       this.missedAttack(name);
