@@ -29,11 +29,7 @@ export default class BattleStage extends React.Component {
 
     // Set a timer to keep the battle moving
     this.battleTimer = setInterval(this.passTime, 200);
-    this.attackTimers = {};
     this.messageTimer = null;
-
-    // Delay monster attacks once action bar is full to make it more fair
-    this.MONSTER_ATTACK_DELAY = 1000;
 
     // Minimum and improved chance of running from battle 
     this.RETREAT_CHANCE = 80;
@@ -111,6 +107,20 @@ export default class BattleStage extends React.Component {
       this.props.setBgMusic('combatDefeat', 1500);
       this.setState({showDefeat: true});
       this.clearTimers();
+    } else if (this.state.actionTime.hero === 100 && this.state.actionCharging.monster === true) {
+      this.setState({
+        actionCharging: {
+          ...this.state.actionCharging,
+          monster: false,
+        },
+      });
+    } else if (this.state.actionTime.hero === 0 && this.state.actionCharging.monster === false) {
+      this.setState({
+        actionCharging: {
+          ...this.state.actionCharging,
+          monster: true,
+        },
+      });
     }
   }
 
@@ -171,9 +181,6 @@ export default class BattleStage extends React.Component {
 
   clearTimers = () => {
     clearInterval(this.battleTimer);
-    Object.entries(this.attackTimers).forEach(([_, timer]) => {
-      clearTimeout(timer);
-    });
     clearTimeout(this.messageTimer);
   }
 
@@ -182,7 +189,7 @@ export default class BattleStage extends React.Component {
     const attacker = game[name];
     const defender = game[target];
     // TODO: Allow monster to use skills if they have them (some sort of AI going on here)
-    const criticalMult = this.checkCritical(attacker, defender) ? 3 : 1;
+    const criticalMult = this.checkCritical(attacker, defender) ? this.CRITICAL_HIT_MULTIPLIER : 1;
     const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
     this.props.playSoundEffect(attacker.assetInfo.attackSound);
 
@@ -326,27 +333,13 @@ export default class BattleStage extends React.Component {
 
   missedAttack = (name) => {
     this.messageTimer = setTimeout(() => this.setState({combatMessage: null}), 2000);
-    if (name === 'hero') {
-      this.setState({
-        combatMessage: 'You missed!',
-        actionTime: {
-          ...this.state.actionTime,
-          [name]: 0,
-        }
-      });
-    } else {
-      this.setState({
-        combatMessage: 'Monster missed!',
-        actionTime: {
-          ...this.state.actionTime,
-          [name]: 0,
-        },
-        actionCharging: {
-          ...this.state.actionCharging,
-          [name]: true,
-        },
-      });
-    }
+    this.setState({
+      combatMessage: `${name[0].toUpperCase() + name.substring(1)} missed!`,
+      actionTime: {
+        ...this.state.actionTime,
+        [name]: 0,
+      }
+    });
   }
 
   passTime = () => {
@@ -372,13 +365,7 @@ export default class BattleStage extends React.Component {
     });
 
     canAttack.forEach((monster) => {
-      this.attackTimers[monster] = setTimeout(() => this.monsterAttack(monster, 'hero'), this.MONSTER_ATTACK_DELAY);
-      this.setState({
-        actionCharging: {
-          ...this.state.actionCharging,
-          [monster]: false,
-        },
-      });
+      this.monsterAttack(monster, 'hero');
     });
   }
 
