@@ -15,8 +15,31 @@ import './App.css';
 export default class App extends React.Component {
   constructor() {
     super();
-    this.bgAudio = React.createRef();
-    this.sfxAudio = React.createRef();
+    let audioEnabled = false;
+
+    // Define audio context
+    this.audioCtx = null;
+    this.bgAudioBuffers = {};
+    this.sfxAudioBuffers = {};
+    this.bgAudio = null;
+    this.sfxAudio = null;
+    this.audioQueue = [];
+
+    try {
+      this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      this.gainNode = this.audioCtx.createGain();
+      this.gainNode.connect(this.audioCtx.destination);
+      audioEnabled = true;
+    }
+    catch(e) {
+      console.info('Web Audio API is not supported in this browser');
+      alert('Sorry, your browser does not support the Web Audio API and sound will not play.');
+    }
+
+    // Play music if not suspended
+    if (this.audioCtx.state !== 'suspended') {
+      this.setBgMusic('menu');
+    }
 
     // Add portal container to document
     const portalContainer = document.createElement('div');
@@ -27,8 +50,7 @@ export default class App extends React.Component {
     this.GAME_SLOTS = ['savegame', 'savegame2', 'savegame3'];
 
     this.state = {
-      bgPlay: true,
-      musicName: 'menuMusic',
+      audioEnabled,
       backgroundName: 'menuBackground',
       gameData: null,
       inProgress: false,
@@ -53,6 +75,13 @@ export default class App extends React.Component {
       this.setState({
         gameData: this.freshGameState(),
       });
+    }
+  }
+
+  componentWillUpdate(nextProps, nextState) {
+    if (nextState.musicName !== this.state.musicName) {
+      const strippedName = nextState.musicName.replace('Music', '');
+      this.setBgMusic(strippedName);
     }
   }
 
@@ -86,18 +115,14 @@ export default class App extends React.Component {
     return JSON.parse(localStorage.getItem(game));
   }
 
-  toggleMusic = () => {
-    const audio = this.bgAudio.current;
-    if (audio.paused) {
-      audio.play();
-    } else {
-      audio.pause();
+  toggleMute = () => {
+    // Toggle to mute and unmute sound
+    const newVal = this.state.audioEnabled ? 0 : 1;
+    this.gainNode.gain.value = newVal;
+    this.setState({audioEnabled: !this.state.audioEnabled});
     }
-    this.setState({ bgPlay: !this.state.bgPlay });
-  }
 
   setBgMusic = (name, delay) => {
-    if (!this.state.bgPlay) { return; }
     const musicName = `${name}Music`;
 
     if (!gameMusic[musicName]) {
@@ -105,16 +130,16 @@ export default class App extends React.Component {
       return;
     }
 
-    this.bgAudio.current.src = gameMusic[musicName];
-    if (delay) {
-      setTimeout(() => this.bgAudio.current.play(), delay);
-    } else {
-      this.bgAudio.current.play();
-    }
+    this.loadAudioUrl({
+      url: gameMusic[musicName],
+      source: 'bgAudioBuffers',
+      name: musicName,
+      delay,
+      callback: this.finishedLoading
+    });
   }
 
   playSoundEffect = (name, delay) => {
-    if (!this.state.bgPlay) { return; }
     const soundName = `${name}Sound`;
 
     if (!gameSounds[soundName]) {
@@ -122,20 +147,94 @@ export default class App extends React.Component {
       return;
     }
 
-    this.sfxAudio.current.src = gameSounds[soundName];
-    if (delay) {
-      setTimeout(() => this.sfxAudio.current.play(), delay);
+    this.loadAudioUrl({
+      url: gameSounds[soundName],
+      source: 'sfxAudioBuffers',
+      name: soundName,
+      delay,
+      callback: this.finishedLoading
+    });
+  }
+
+  loadAudioUrl = ({url, source, name, delay = 0, callback}) => {
+    // Queue music so we don't play the wrong one once loaded. 
+    // SFX are hopefully good but could do the same thing if needed
+    if (source.indexOf('bgAudio') > -1) {
+      this.audioQueue.push(name);
+
+      // Stop any currently playing audio here so that it just goes silent
+      // This is better than playing the wrong music (I think?)
+      if (this.bgAudio) {
+        if (this.bgAudio.context.state !== 'suspended') {
+          this.bgAudio.stop();
+        }
+        this.bgAudio.disconnect();
+      }
+      this.bgAudio = null;
+    }
+
+    if (this[source][name]) {
+      callback({
+        buffer: this[source][name],
+        source,
+        name,
+        delay,
+      });
     } else {
-      this.sfxAudio.current.play();
+      window.fetch(url)
+      .then((response) => response.arrayBuffer())
+      .then((arrayBuffer) => this.audioCtx.decodeAudioData(
+        arrayBuffer,
+        (buffer) => callback({buffer, source, name, delay}),
+        (error) => {
+          console.error(`Error decoding array buffer`);
+        }
+      ))
+      .catch((error) => {
+        console.error(`Error getting audio from ${url}`);
+      })
+    }
+  }
+
+  finishedLoading = ({buffer, source, name, delay}) => {
+    // Save the data so we don't have to make a new request (could utilize localstorage here too)
+    this[source][name] = buffer;
+
+    if (source.indexOf('bgAudio') > -1) {
+      // Make sure the music is the last one that was called for (in case of slow loading)
+      const audioIndex = this.audioQueue.indexOf(name);
+      if (audioIndex !== this.audioQueue.length - 1) {
+        this.audioQueue.splice(audioIndex, 1);
+        return;
+      } else {
+        this.audioQueue.shift();
+      }
+      this.bgAudio = this.audioCtx.createBufferSource();
+      this.bgAudio.buffer = buffer;
+      this.bgAudio.loop = true;
+      this.bgAudio.connect(this.gainNode);
+      this.bgAudio.start(this.audioCtx.currentTime + delay / 1000);
+    } else {
+      if (this.sfxAudio) {
+        if (this.sfxAudio.context.state !== 'suspended') {
+          this.sfxAudio.stop();
+        }
+        this.sfxAudio.disconnect();
+      }
+      this.sfxAudio = null;
+      this.sfxAudio = this.audioCtx.createBufferSource();
+      this.sfxAudio.buffer = buffer;
+      this.sfxAudio.connect(this.gainNode);
+      this.sfxAudio.start(this.audioCtx.currentTime + delay / 1000);
     }
   }
 
   changeLocation = (name) => {
     // Don't change it unless there is music/backgrond for scene
-    const musicName = `${name}Music`;
     const backgroundName = `${name}Background`;
+    const musicName = `${name}Music`;
     this.setState({
-      musicName: gameMusic[musicName] ? musicName : this.state.musicName,
+      musicName,
       backgroundName: gameBackgrounds[backgroundName] ? backgroundName : this.state.backgroundName,
     });
   }
@@ -151,26 +250,26 @@ export default class App extends React.Component {
   }
 
   gameStart = (gameData) => {
-    // Start the music
-    if (this.state.bgPlay) {
-      this.bgAudio.current.play();
+    console.log(this.audioCtx.state);
+    if (this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
     }
-
     if (!gameData) {
       this.setState({
         gameData: this.freshGameState(),
         inProgress: true,
+        musicName: 'menuMusic',
       });
     } else if (typeof gameData === 'object') {
       this.setState({
-        gameData: this.patchOldGame(gameData), // TODD: remove only patch old game portion
+        gameData: gameData,
         inProgress: true,
         musicName: 'townMusic',
         backgroundName: 'townBackground',
       });
     } else {
       this.setState({
-        gameData: this.patchOldGame(this.state.gameData), // TODO: Can remove next update
+        gameData: this.state.gameData,
         inProgress: true,
         musicName: 'townMusic',
         backgroundName: 'townBackground',
@@ -178,35 +277,10 @@ export default class App extends React.Component {
     }
   }
 
-  // TODO: REMOVE THIS STUFF. IT"S FOR PATCHING OLD GAMES
-  patchOldGame = (gameData) => {
-    if (!gameData.hero.equipment || !gameData.hero.equipment.weapon) {
-      const current = gameData.hero.equipment;
-      const backpack = allItems.find((item) => item.id === 10005);
-      gameData.hero.equipment = {
-        helmet: (current && current.helmet) || null,
-        armor: (current && current.armor) || null,
-        weapon: (current && current.weapon) || null,
-        shield: (current && current.shield) || null,
-        boots: (current && current.boots) || null,
-        backpack: populateBackPackData(backpack),
-      };
-    }
-    delete gameData.heroDidAttack;
-    return gameData;
-
-    function populateBackPackData(backpack) {
-      backpack.price = backpack.price[0];
-      backpack.attributes.capacity = backpack.attributes.capacity[0];
-      return backpack;
-    }
-  }
-
   render() {
     const {
-      bgPlay,
+      audioEnabled,
       gameData,
-      musicName,
       loggedIn,
       inProgress,
       hasSaveData,
@@ -214,7 +288,7 @@ export default class App extends React.Component {
     return (
       <div className="App">
         <div className="bgContainer" style={{backgroundImage: `url(${gameBackgrounds[this.state.backgroundName]})`}}>
-          <Header bgPlay={bgPlay} toggleMusic={this.toggleMusic} />
+          <Header bgPlay={audioEnabled} toggleMusic={this.toggleMute} />
 
           {inProgress 
           ?
@@ -234,14 +308,6 @@ export default class App extends React.Component {
               loggedIn={loggedIn}
             />
           }
-          
-          <audio
-            src={gameMusic[musicName]}
-            ref={this.bgAudio}
-            loop
-            autoPlay={bgPlay}
-          />
-          <audio ref={this.sfxAudio} />
         </div>
       </div>
     );

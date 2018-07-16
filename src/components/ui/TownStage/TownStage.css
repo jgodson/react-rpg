@@ -1,5 +1,6 @@
 .TownStage {
-  height: 398px;
+  height: 100%;
+  min-height: 398px;
   background-size: cover;
   background-image: url('../../../assets/backgrounds/town.jpg');
 }

@@ -68,7 +68,7 @@ export default class TownStage extends React.PureComponent {
 
   restAtInn = () => {
     const { game } = this.props;
-    const cost = game.hero.stats.level * 15;
+    const cost = game.hero.stats.level * this.INN_COST_PER_LEVEL;
     const health = game.hero.stats.health - game.hero.vitals.health;
     const mana = game.hero.stats.mana - game.hero.vitals.mana;
 

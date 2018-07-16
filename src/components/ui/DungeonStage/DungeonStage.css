@@ -1,3 +1,4 @@
 .DungeonStage {
-  height: 398px;
+  height: 100%;
+  min-height: 398px;
 }

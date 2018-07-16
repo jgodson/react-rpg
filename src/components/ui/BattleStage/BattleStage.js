@@ -94,7 +94,7 @@ export default class BattleStage extends React.Component {
     // Check if monster or hero is dead
     if (monster.vitals.health <= 0 && !this.state.showRewards) {
       this.props.playSoundEffect(monster.assetInfo.deathSound);
-      this.props.setBgMusic('combatVictory', 1500);
+      this.props.setBgMusic('combatVictory', 500);
       this.setState({showRewards: true});
       const rewardsActions = [
         { name: 'Items', secondary: true, onClick: this.showInventory },
@@ -104,7 +104,7 @@ export default class BattleStage extends React.Component {
       this.clearTimers();
     } else if (hero.vitals.health <= 0 && !this.state.showDefeat) {
       this.props.playSoundEffect(hero.assetInfo.deathSound);
-      this.props.setBgMusic('combatDefeat', 1500);
+      this.props.setBgMusic('combatDefeat', 500);
       this.setState({showDefeat: true});
       this.clearTimers();
     } else if (this.state.actionTime.hero === 100 && this.state.actionCharging.monster === true) {
