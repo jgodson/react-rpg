@@ -250,10 +250,11 @@ export default class App extends React.Component {
   }
 
   gameStart = (gameData) => {
-    console.log(this.audioCtx.state);
+    // For browsers that auto suspend new contexts, we resume it on button press
     if (this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();
     }
+    
     if (!gameData) {
       this.setState({
         gameData: this.freshGameState(),
