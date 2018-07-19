@@ -437,9 +437,14 @@ export default class Game extends React.Component {
   // Generates a monster object based on a given monster
   populateMonsterData = (monsters) => {
     return monsters.map((monsterSchema) => {
-      const minLevel = Math.max(monsterSchema.stats.level[0], (this.state.hero.stats.level - 1 || 1));
-      let maxLevel = Math.min(monsterSchema.stats.level[1], this.state.hero.stats.level);
-      if (maxLevel < minLevel) {
+      const heroLevel = this.state.hero.stats.level;
+      const [monsterMinLevel, monsterMaxLevel] = monsterSchema.stats.level;
+      let minLevel = heroLevel <= monsterMinLevel ? monsterMinLevel : heroLevel - 1;
+      let maxLevel = heroLevel > monsterMaxLevel ? monsterMaxLevel : heroLevel;
+      if (minLevel > monsterMaxLevel) {
+        minLevel = monsterMaxLevel;
+        maxLevel = minLevel;
+      } else if (minLevel > maxLevel) {
         maxLevel = minLevel;
       }
       const stats = {
