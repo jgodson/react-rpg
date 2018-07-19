@@ -48,6 +48,12 @@ export default class App extends React.Component {
 
     // The names that we save our data into local storage under
     this.GAME_SLOTS = ['savegame', 'savegame2', 'savegame3'];
+    
+    if (!('hidden' in document)) {
+      alert('Your browser does not support the Visibility API. Music will not pause when minimized or locked');
+    } else {
+      document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    }
 
     this.state = {
       audioEnabled,
@@ -120,6 +126,14 @@ export default class App extends React.Component {
     const newVal = this.state.audioEnabled ? 0 : 1;
     this.gainNode.gain.value = newVal;
     this.setState({audioEnabled: !this.state.audioEnabled});
+    }
+
+    handleVisibilityChange = () => {
+      if (document.hidden) {
+        this.audioCtx.suspend();
+      } else {
+        this.audioCtx.resume();
+      }
     }
 
   setBgMusic = (name, delay) => {
