@@ -214,7 +214,10 @@ export default class BattleStage extends React.Component {
 
     const criticalMult = this.checkCritical(attacker, defender) ? this.CRITICAL_HIT_MULTIPLIER : 1;
     const damage = this.calculateDamage(attacker.stats.attack, defender.stats.defence, criticalMult);
-    const attackSound = game.hero.assetInfo.attackSound;
+    const weaponSound = game.hero.equipment.weapon 
+      && game.hero.equipment.weapon.assetInfo
+      && game.hero.equipment.weapon.assetInfo.attackSound;
+    const attackSound = weaponSound || game.hero.assetInfo.attackSound;
     this.props.playSoundEffect(attackSound);
 
     const hit = this.checkHit(attacker, defender);
@@ -280,6 +283,17 @@ export default class BattleStage extends React.Component {
     const defender = game[defenderName];
     const { maxDamage, skillDefence, manaCost } = calculateSkillEffect({attacker, defender, skill});
     let actualDamage = 0;
+    let skillSound = skill.assetInfo.sound && skill.assetInfo.sound !== '' && skill.assetInfo.sound;
+    let weaponSound = game.hero.equipment.weapon
+      && game.hero.equipment.weapon.assetInfo
+      && game.hero.equipment.weapon.assetInfo.attackSound
+      && game.hero.equipment.weapon.assetInfo.attackSound !== ''
+      && game.hero.equipment.weapon.assetInfo.attackSound;
+    let attackSound = attackerName === 'hero' 
+      ? 
+        skillSound || weaponSound || game.hero.assetInfo.attackSound
+      :
+        skillSound || game[attackerName].assetInfo.attackSound;
 
     if (skill.target === 'self') {
       actualDamage = calculateSkillDamage(maxDamage);
@@ -288,6 +302,7 @@ export default class BattleStage extends React.Component {
       actualDamage = calculateSkillDamage(maxDamage, skillDefence);
       changeVitals(defenderName, {health: actualDamage});
     }
+    this.props.playSoundEffect(attackSound);
 
     setTimeout(() => changeVitals(attackerName, {mana: -manaCost}), 0);
     if (attackerName === 'hero') {

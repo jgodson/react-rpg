@@ -9,6 +9,7 @@ import {
   calculateSkillEffect,
 } from '../../../helpers/battleHelpers';
 import './TownStage.css';
+import { getShopItems, canBeSold } from '../../../helpers/itemHelpers';
 
 export default class TownStage extends React.PureComponent {
   constructor(props) {
@@ -30,9 +31,9 @@ export default class TownStage extends React.PureComponent {
         { name: 'Go to dungeon', secondary: true, onClick: () => this.props.transitionToLevel("level1") },
       ],
       blacksmith: [
-        { name: 'Buy', disabled: true},
-        { name: 'Sell', disabled: true},
-        { name: 'Enhance', disabled: true},
+        { name: 'Buy', primary: true, onClick: () => this.setState({townAction: 'buy-equipment'}) },
+        { name: 'Sell', destructive: true, onClick: () => this.setState({townAction: 'sell-items'}) },
+        { name: 'Upgrade', secondary: true, onClick: () => this.setState({townAction: 'upgrade-equipment'}) },
         { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       training: [
@@ -41,8 +42,8 @@ export default class TownStage extends React.PureComponent {
         { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       generalStore: [
-        { name: 'Buy', disabled: true},
-        { name: 'Sell', disabled: true},
+        { name: 'Buy', primary: true, onClick: () => this.setState({townAction: 'buy-items'}) },
+        { name: 'Sell', destructive: true, onClick: () => this.setState({townAction: 'sell-items'}) },
         { name: 'Back to town', secondary: true, onClick: () => this.setState({location: 'town'}) },
       ],
       inn: [
@@ -53,10 +54,22 @@ export default class TownStage extends React.PureComponent {
     }
 
     this.props.setAvailableActions(this.townActions['town']);
+    const maxItemLevel = Math.floor(props.game.hero.stats.level / 5) || 1;
+    const minItemLevel = maxItemLevel - 2 > 0 ? maxItemLevel - 2 : 1;
 
     this.state = {
       townAction: null,
-      location: 'town'
+      location: 'town',
+      blacksmithInventory: getShopItems({
+        shopType: 'blacksmith',
+        minLevel: minItemLevel,
+        maxLevel: maxItemLevel
+      }),
+      generalStoreInvetory: getShopItems({
+        shopType: 'general-store',
+        minLevel: minItemLevel,
+        maxLevel: maxItemLevel
+      }),
     };
   }
 
@@ -81,6 +94,9 @@ export default class TownStage extends React.PureComponent {
       maxDamage,
       manaCost,
     } = calculateSkillEffect({attacker: this.props.game.hero, skill});
+    
+    const skillSound = skill.assetInfo.sound && skill.assetInfo.sound !== '' && skill.assetInfo.sound;
+    this.props.playSoundEffect(skillSound);
 
     const healing = calculateSkillDamage(maxDamage);
     this.props.changeVitals('hero', {health: healing, mana: -manaCost});
@@ -99,7 +115,14 @@ export default class TownStage extends React.PureComponent {
   closeModal = () => this.setState({townAction: null});
 
   render() {
-    const { game } = this.props;
+    const {
+      game,
+      changeInventoryOrEquipment,
+      learnOrUpgradeSkill,
+      gameSlots,
+    } = this.props;
+
+    const { hero, inventory } = game;
 
     let modalActions = null;
     let modalTitle = null;
@@ -126,9 +149,9 @@ export default class TownStage extends React.PureComponent {
           modalActions = [{ name: 'Close', destructive: true, onClick: this.closeModal }];
           return (
             <GameList
-              gameSlots={this.props.gameSlots}
+              gameSlots={gameSlots}
               action="save"
-              currentData={this.props.game} 
+              currentData={game} 
             />
           );
         case 'inventory':
@@ -137,9 +160,9 @@ export default class TownStage extends React.PureComponent {
           fullWidth = true;
           return (
             <InventoryList
-              items={this.props.game.inventory}
-              capacity={this.props.game.hero.equipment.backpack.attributes.capacity}
-              changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
+              items={inventory}
+              capacity={hero.equipment.backpack.attributes.capacity}
+              changeInventoryOrEquipment={changeInventoryOrEquipment}
             />
           );
         case 'magic':
@@ -147,8 +170,8 @@ export default class TownStage extends React.PureComponent {
           modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
           return (
             <SkillList
-              skills={game.hero.magic}
-              hero={game.hero}
+              skills={hero.magic}
+              hero={hero}
               onSelectSkill={this.useSkill}
               disableFn={this.checkIfSkillDisabled}
             />
@@ -158,8 +181,8 @@ export default class TownStage extends React.PureComponent {
           modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
           return (
             <SkillList
-              skills={game.hero.skills}
-              hero={game.hero}
+              skills={hero.skills}
+              hero={hero}
               onSelectSkill={this.useSkill}
               disableFn={this.checkIfSkillDisabled}
             />
@@ -170,9 +193,9 @@ export default class TownStage extends React.PureComponent {
           return (
             <SkillList
               skills={allMagic}
-              hero={game.hero}
-              gold={game.inventory[0].quantity}
-              onSkillAction={this.props.learnOrUpgradeSkill}
+              hero={hero}
+              gold={inventory[0].quantity}
+              onSkillAction={learnOrUpgradeSkill}
               isTraining={true}
             />
           );
@@ -182,14 +205,59 @@ export default class TownStage extends React.PureComponent {
           return (
             <SkillList
               skills={allSkills}
-              hero={game.hero}
-              gold={game.inventory[0].quantity}
-              onSkillAction={this.props.learnOrUpgradeSkill}
+              hero={hero}
+              gold={inventory[0].quantity}
+              onSkillAction={learnOrUpgradeSkill}
               isTraining={true}
             />
           );
+        case 'buy-items':
+          modalTitle = <h2>General Store</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          return (
+            <InventoryList
+              items={this.state.generalStoreInvetory}
+              buySellUpgrade="buy"
+              gold={inventory[0].quantity}
+              changeInventoryOrEquipment={changeInventoryOrEquipment}
+            />
+          );
+        case 'sell-items':
+          modalTitle = <h2>Sell Items</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          return (
+            <InventoryList
+              items={inventory}
+              buySellUpgrade="sell"
+              disableFn={canBeSold}
+              capacity={hero.equipment.backpack.attributes.capacity}
+              changeInventoryOrEquipment={changeInventoryOrEquipment}
+            />
+          );
+        case 'buy-equipment':
+          modalTitle = <h2>Blacksmith</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          return (
+            <InventoryList
+              items={this.state.blacksmithInventory}
+              buySellUpgrade="buy"
+              gold={inventory[0].quantity}
+              changeInventoryOrEquipment={changeInventoryOrEquipment}
+            />
+          );
+        case 'upgrade-equipment':
+          modalTitle = <h2>Upgrade Equipment</h2>
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          return (
+            <InventoryList
+              items={inventory}
+              buySellUpgrade="upgrade"
+              gold={inventory[0].quantity}
+              changeInventoryOrEquipment={changeInventoryOrEquipment}
+            />
+          );
         default:
-          return;
+          return null;
       }
     })();
 

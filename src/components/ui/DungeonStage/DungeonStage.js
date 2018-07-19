@@ -35,6 +35,9 @@ export default class DungeonStage extends React.Component {
       maxDamage,
       manaCost,
     } = calculateSkillEffect({attacker: this.props.game.hero, skill});
+    
+    const skillSound = skill.assetInfo.sound && skill.assetInfo.sound !== '' && skill.assetInfo.sound;
+    this.props.playSoundEffect(skillSound);
 
     const healing = calculateSkillDamage(maxDamage);
     this.props.changeVitals('hero', {health: healing, mana: -manaCost});

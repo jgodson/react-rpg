@@ -55,7 +55,7 @@
     },
     "assetInfo": {
       "image": "healing",
-      "sound": ""
+      "sound": "genericSpell"
     }
   },
   {
@@ -114,7 +114,7 @@
     },
     "assetInfo": {
       "image": "fireball",
-      "soudn": ""
+      "sound": "attackSpell"
     }
   }
 ]

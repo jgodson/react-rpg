@@ -16,6 +16,9 @@ import {
   getItem,
   getEquipmentSummary,
   isTwoHanded,
+  calculateSellingPrice,
+  applyItemUpgrade,
+  calculateUpgradePrice,
 } from '../../../helpers/itemHelpers';
 import { 
   generateStat,
@@ -331,19 +334,46 @@ export default class Game extends React.Component {
     let newInventory = this.state.inventory;
     let newEquipment = this.state.hero.equipment;
     let item = null;
+    let sound = '';
+    let cost = 0;
 
     switch(changeType) {
       case 'drop':
+        item = newInventory[indexItemType];
+        sound = item.assetInfo && item.assetInfo.moveSound;
+        sound && this.props.playSoundEffect(sound);
         newInventory.splice(indexItemType, 1);
+        break;
+      case 'sell':
+        item = this.state.inventory[indexItemType];
+        newInventory.splice(indexItemType, 1);
+        this.props.playSoundEffect('gold');
+        newInventory[0].quantity += calculateSellingPrice(item);
+        break;
+      case 'buy':
+        // Duplicate original
+        newInventory.push(JSON.parse(JSON.stringify(indexItemType)));
+        this.props.playSoundEffect('gold');
+        newInventory[0].quantity -= indexItemType.price;
+        break;
+      case 'upgrade':
+        cost = calculateUpgradePrice(newInventory[indexItemType]);
+        applyItemUpgrade(newInventory[indexItemType]);
+        this.props.playSoundEffect('upgrade');
+        newInventory[0].quantity -= cost;
         break;
       case 'use':
         item = this.state.inventory[indexItemType];
+        sound = indexItemType.assetInfo && indexItemType.assetInfo.useSound;
+        sound && this.props.playSoundEffect(sound);
         const {health, mana} = item.attributes.vitals;
         this.changeVitals('hero', {health, mana});
         newInventory.splice(indexItemType, 1);
         break;
       case 'equip':
         item = this.state.inventory[indexItemType];
+        sound = item.assetInfo && item.assetInfo.moveSound;
+        sound && this.props.playSoundEffect(sound);
         const type = item.type;
         const currentEquipment = newEquipment[type];
         if (type === 'weapon' && isTwoHanded(item)) {
@@ -379,6 +409,8 @@ export default class Game extends React.Component {
       case 'unequip':
         if (!hasRoomToUnequip) { return; }
         item = newEquipment[indexItemType];
+        sound = item.assetInfo && item.assetInfo.moveSound;
+        sound && this.props.playSoundEffect(sound);
         newEquipment[indexItemType] = null;
         newInventory.push(item);
         this.applyEquipmentChange('unequip', item);
@@ -396,6 +428,7 @@ export default class Game extends React.Component {
     const newState = this.state;
     const skillType = skill.type;
     const currentSkillIndex = this.state.hero[skillType].findIndex((curSkill) => curSkill.id === skill.id);
+    this.props.playSoundEffect('gold');
 
     const curretSkillLevel = currentSkillIndex > -1 ? this.state.hero[skillType][currentSkillIndex].level : 0;
     const price = skill.levels[curretSkillLevel + 1].price;
