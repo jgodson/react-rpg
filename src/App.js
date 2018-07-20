@@ -37,7 +37,7 @@ export default class App extends React.Component {
     }
 
     // Play music if not suspended
-    if (this.audioCtx.state !== 'suspended') {
+    if (this.audioCtx && this.audioCtx.state !== 'suspended') {
       this.setBgMusic('menu');
     }
 
