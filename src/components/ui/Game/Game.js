@@ -327,7 +327,7 @@ export default class Game extends React.Component {
     }
   }
 
-  changeInventoryOrEquipment = (changeType, indexItemType) => {
+  changeInventoryOrEquipment = (changeType, indexItemType, upgradeEquipped) => {
     const inventoryCapacity = this.state.hero.equipment.backpack.attributes.capacity;
     const currentItems = this.state.inventory.length;
     const hasRoomToUnequip = currentItems + 1 <= inventoryCapacity;
@@ -357,8 +357,15 @@ export default class Game extends React.Component {
         newInventory[0].quantity -= indexItemType.price;
         break;
       case 'upgrade':
-        cost = calculateUpgradePrice(newInventory[indexItemType]);
-        applyItemUpgrade(newInventory[indexItemType]);
+        cost = calculateUpgradePrice(indexItemType);
+        // Remove stats from equipment so we can reapply them if item is equipped
+        if (upgradeEquipped) {
+          this.applyEquipmentChange('unequip', indexItemType);
+        }
+        applyItemUpgrade(indexItemType);
+        if (upgradeEquipped) {
+          setTimeout(() => this.applyEquipmentChange('equip', indexItemType), 0);
+        }
         this.props.playSoundEffect('upgrade');
         newInventory[0].quantity -= cost;
         break;

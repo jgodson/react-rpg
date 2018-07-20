@@ -88,5 +88,5 @@ Stat.propTypes = {
   description: PropTypes.string,
   value: PropTypes.number.isRequired,
   showButton: PropTypes.bool,
-  changeStats: PropTypes.func.isRequired,
+  changeStats: PropTypes.func,
 };

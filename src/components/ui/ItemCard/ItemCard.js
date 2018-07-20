@@ -28,7 +28,7 @@ export default function ItemCard(props) {
   const hasStatsToShow = item && item.attributes && Object.keys(item.attributes).some((stat) => showStats.includes(stat));
   const isBuying = buySellUpgrade === 'buy';
   const isSelling = buySellUpgrade === 'sell';
-  const isUpgrading = buySellUpgrade === 'upgrade';
+  const isUpgrading = buySellUpgrade && buySellUpgrade.indexOf('upgrade') > -1;
   const price = (() => {
     if (!item) { return null; }
     if (isBuying) {
@@ -127,7 +127,7 @@ ItemCard.propTypes = {
   gold: PropTypes.number,
   quantity: PropTypes.number,
   disabled: PropTypes.bool,
-  index: PropTypes.number,
+  index: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   actions: PropTypes.arrayOf(PropTypes.shape({
     name: PropTypes.string,
     onClick: PropTypes.func,

@@ -16,6 +16,7 @@
     "attack": "Atk",
     "defence": "Def",
     "health": "Health",
-    "mana": "Mana"
+    "mana": "Mana",
+    "capacity": "Carry"
   }
 }

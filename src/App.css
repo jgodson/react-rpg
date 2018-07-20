@@ -5,3 +5,11 @@
   flex-direction: column;
   justify-content: center;
 }
+
+#PortalContainer .ModalContainer.shown:not(:first-child) .Modal {
+  z-index: 101;
+}
+
+#PortalContainer .ModalContainer.shown:not(:first-child) .ModalBackground {
+  z-index: 100;
+}

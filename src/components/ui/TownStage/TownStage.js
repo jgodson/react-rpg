@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, GameList, InventoryList, SkillList } from '../../ui';
+import { Modal, GameList, InventoryList, SkillList, Equipment } from '../../ui';
 import allMagic from '../../../assets/data/magic.json';
 import allSkills from '../../../assets/data/skills.json';
 import {
@@ -24,6 +24,7 @@ export default class TownStage extends React.PureComponent {
         { name: 'Training Grounds', onClick: () => this.setState({location: 'training'}) },
         { name: 'General Store', onClick: () => this.setState({location: 'generalStore'}) },
         { name: 'Inventory', secondary: true, onClick: () => this.setState({townAction: 'inventory'}) },
+        { name: 'Equipment', secondary: true, onClick: () => this.setState({townAction: 'equipment'}) },
         { name: 'Skills', secondary: true, onClick: () => this.setState({townAction: 'skills'}) },
         { name: 'Magic', secondary: true, onClick: () => this.setState({townAction: 'magic'}) },
         { name: 'Save Game', secondary: true, onClick: () => this.setState({townAction: 'save-game'}) },
@@ -163,6 +164,17 @@ export default class TownStage extends React.PureComponent {
               items={inventory}
               capacity={hero.equipment.backpack.attributes.capacity}
               changeInventoryOrEquipment={changeInventoryOrEquipment}
+              showStatus
+            />
+          );
+        case 'equipment':
+          modalTitle = <h2>Equipment</h2>;
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          fullWidth = true;
+          return (
+            <Equipment
+              character={hero}
+              changeInventoryOrEquipment={changeInventoryOrEquipment}
             />
           );
         case 'magic':
@@ -249,12 +261,22 @@ export default class TownStage extends React.PureComponent {
           modalTitle = <h2>Upgrade Equipment</h2>
           modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
           return (
-            <InventoryList
-              items={inventory}
-              buySellUpgrade="upgrade"
-              gold={inventory[0].quantity}
-              changeInventoryOrEquipment={changeInventoryOrEquipment}
-            />
+            <React.Fragment>
+              <p>Inventory</p>
+              <InventoryList
+                items={inventory}
+                buySellUpgrade="upgrade"
+                gold={inventory[0].quantity}
+                changeInventoryOrEquipment={changeInventoryOrEquipment}
+              />
+              <p>Equipped</p>
+              <InventoryList
+                items={Object.entries(hero.equipment).map(([_, item]) => item)}
+                buySellUpgrade="upgrade-equipped"
+                gold={inventory[0].quantity}
+                changeInventoryOrEquipment={changeInventoryOrEquipment}
+              />
+            </React.Fragment>
           );
         default:
           return null;

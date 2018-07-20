@@ -8,12 +8,14 @@ export default class InventoryList extends React.Component {
     super(props);
     const isBuying = props.buySellUpgrade === 'buy';
     const isSelling = props.buySellUpgrade === 'sell';
-    const isUpgrading = props.buySellUpgrade === 'upgrade';
+    const isUpgrading = props.buySellUpgrade && props.buySellUpgrade.indexOf('upgrade') > -1;
+    const upgradeEquipped = props.buySellUpgrade && props.buySellUpgrade.indexOf('equipped') > -1;
 
     this.state = {
       isBuying,
       isSelling,
       isUpgrading,
+      upgradeEquipped,
       selected: null,
       actions: null,
     }
@@ -171,12 +173,13 @@ export default class InventoryList extends React.Component {
   }
 
   upgradeItem = (index) => () => {
-    this.props.changeInventoryOrEquipment('upgrade', index);
-    this.props.onAction && this.props.onAction(index);
+    const item = this.props.items[index];
+    this.props.changeInventoryOrEquipment('upgrade', item, this.state.upgradeEquipped);
+    this.props.onAction && this.props.onAction(item);
   }
 
   render() {
-    const { items, capacity, disableFn, gold } = this.props;
+    const { items, capacity, disableFn, gold, showStatus } = this.props;
     const numEmptyItems = capacity ? capacity - items.length : 0;
     const emptyItemArray = Array.from({length: numEmptyItems}, () => null);
     const filledArray = items.concat(emptyItemArray);
@@ -199,6 +202,7 @@ export default class InventoryList extends React.Component {
             );
           })}
         </EventListener>
+        {showStatus && <span className="capacity-status">{items.length}/{capacity}</span>}
       </div>
     );
   }

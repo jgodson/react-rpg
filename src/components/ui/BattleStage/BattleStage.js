@@ -412,10 +412,12 @@ export default class BattleStage extends React.Component {
             return (
               <InventoryList 
                 items={inventory}
+                capacity={this.state.showRewards ? hero.equipment.backpack.attributes.capacity : null}
                 disableFn={consumableInBattle}
                 disableItemActions={disableItemActions}
                 changeInventoryOrEquipment={this.props.changeInventoryOrEquipment}
                 onAction={this.onItemAction}
+                showStatus={this.state.showRewards}
               />
             );
           case 'magic':

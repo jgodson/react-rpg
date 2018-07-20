@@ -7,9 +7,6 @@ import './Stats.css';
 export default function Stats(props) {
   const { allStats, changeStats, disableChange, tempStats } = props;
 
-  // Rename stats
-  const statNames = {}
-
   // Don't show these ones
   const doNotShow = [
     'health',
@@ -20,7 +17,6 @@ export default function Stats(props) {
 
   // Don't show an increase button for these
   const noButtons = ['level', 'attack', 'defence'];
-
   const hasPoints = allStats.statPoints > 0;
 
   return (
@@ -33,24 +29,18 @@ export default function Stats(props) {
         <tbody>
           {Object.entries(allStats).map(([name, value]) => {
             if (doNotShow.includes(name)) { return null; }
-
-            let statName = name;
-            if (statNames[statName]) {
-              statName = statNames[statName];
-            } else {
-              statName = statName[0].toUpperCase() + statName.substring(1);
-            }
+            const statName = name[0].toUpperCase() + name.substring(1);
             return (
-              <Stat 
+              <Stat
                 key={name}
                 statKey={name}
                 description={statDescriptions[name]}
                 name={statName}
                 value={value}
-                tempValue={tempStats[name]}
+                tempValue={tempStats && tempStats[name]}
                 showButton={!noButtons.includes(name) && hasPoints}
                 disableButton={!hasPoints || disableChange}
-                changeStats={changeStats}
+                changeStats={changeStats && changeStats}
               />
             );
           })}
@@ -63,7 +53,7 @@ export default function Stats(props) {
 Stats.propTypes = {
   heroName: PropTypes.string,
   allStats: PropTypes.object.isRequired,
-  changeStats: PropTypes.func.isRequired,
+  changeStats: PropTypes.func,
   disableChange: PropTypes.bool,
-  tempStats: PropTypes.object.isRequired,
+  tempStats: PropTypes.object,
 };

@@ -1,0 +1,39 @@
+.Equipment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.Equipment .information {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.Equipment .Stats {
+  background: none;
+  border: none;
+}
+
+.Equipment .Stats .stats-list {
+  text-align: left;
+}
+
+.Equipment .EventListener {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.Equipment .Character {
+  display: none;
+}
+
+@media screen and (min-width: 600px) {
+  .Equipment .Character {
+    display: block;
+  }
+}
+
+.Equipment .equipment-slot {
+  display: inline-block;
+}

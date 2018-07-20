@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Modal, InventoryList, SkillList } from '../../ui';
+import { Modal, InventoryList, SkillList, Equipment } from '../../ui';
 import {
   skillNotUseableOutsideBattle,
   calculateSkillDamage,
@@ -13,6 +13,7 @@ export default class DungeonStage extends React.Component {
     super(props);
     const dungeonActions = [
       { name: 'Inventory', secondary: true, onClick: () => this.setState({showModal: 'inventory'}) },
+      { name: 'Equipment', secondary: true, onClick: () => this.setState({showModal: 'equipment'}) },
       { name: 'Skills', secondary: true, onClick: () => this.setState({showModal: 'skills'}) },
       { name: 'Magic', secondary: true, onClick: () => this.setState({showModal: 'magic'}) },
       { name: 'Enter combat', destructive: true, onClick: this.props.startFight },
@@ -68,6 +69,17 @@ export default class DungeonStage extends React.Component {
             <InventoryList 
               items={game.inventory}
               capacity={game.hero.equipment.backpack.attributes.capacity}
+              changeInventoryOrEquipment={changeInventoryOrEquipment}
+              showStatus
+            />
+          );
+        case 'equipment':
+          modalTitle = <h2>Equipment</h2>;
+          modalActions = [{ name: 'Close', primary: true, onClick: this.closeModal }];
+          fullWidth = true;
+          return (
+            <Equipment
+              character={game.hero}
               changeInventoryOrEquipment={changeInventoryOrEquipment}
             />
           );
