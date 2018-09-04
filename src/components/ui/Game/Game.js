@@ -43,6 +43,7 @@ export default class Game extends React.Component {
         level: {},
         monstersInLevel: [],
         treasuresInLevel: [],
+        lowestLevel: 0,
         hero: {
           ...gameData.hero,
           stats: {
@@ -61,6 +62,7 @@ export default class Game extends React.Component {
             backpack: populateBackPackData(getItem(10005)),
           }
         },
+        noCombat: false,
         townAction: null,
       };
     } else {
@@ -109,11 +111,27 @@ export default class Game extends React.Component {
   transitionToLevel = (name) => {
     const level = levelData[name];
     const monstersInLevel = this.getMonstersForCurrentLevel(level);
-    
+    // TODO: treasures
     this.setState({
       level,
+      location: {
+        x: level.start.x,
+        y: level.start.y,
+      },
+      lowestLevel: level.level,
       monstersInLevel,
       gameState: level ? level.type : this.state.gameState,
+    });
+  }
+
+  moveMonsters = () => {
+
+  }
+
+  moveTo = (x, y) => {
+    this.setState({
+      location: {x, y},
+      noCombat: false,
     });
   }
 
@@ -216,7 +234,9 @@ export default class Game extends React.Component {
   }
 
   acknowledgeRewards = () => {
-    const { rewards } = this.state.monster;
+    const { rewards, index } = this.state.monster;
+    const monstersAvailable = this.state.monstersInLevel;
+    monstersAvailable[index] = null;
     const currentExp = this.state.hero.vitals.exp;
     const nextLevelExp = this.state.hero.stats.nextExpLevel;
     const levelUp = currentExp + rewards.exp >= nextLevelExp;
@@ -232,10 +252,11 @@ export default class Game extends React.Component {
       rewards.items.splice(start, take);
     }
 
-    // Add rewards + items to hero's inventory
+    // Add rewards + items to hero's inventory, remove defeated monster from level
     this.setState({
       monster: null,
       gameState: 'dungeon',
+      monstersInLevel: monstersAvailable,
       hero: {
         ...this.state.hero,
         vitals: {
@@ -471,12 +492,17 @@ export default class Game extends React.Component {
       ? monsters.slice(0, count - monsters.length)
       : monsters;
 
-    return this.populateMonsterData(monsters);
+    return this.populateMonsterData(monsters, level);
   }
 
   // Generates a monster object based on a given monster
-  populateMonsterData = (monsters) => {
-    return monsters.map((monsterSchema) => {
+  populateMonsterData = (monsters, levelData) => {
+    // Add anywhere already used so we don't place a monster there
+    let usedLocations = [];
+    levelData.connections.forEach((con) => usedLocations.push({x: con.location.x, y: con.location.y}));
+    usedLocations.push(levelData.start);
+
+    return monsters.map((monsterSchema, index) => {
       const heroLevel = this.state.hero.stats.level;
       const [monsterMinLevel, monsterMaxLevel] = monsterSchema.stats.level;
       let minLevel = heroLevel <= monsterMinLevel ? monsterMinLevel : heroLevel - 1;
@@ -533,8 +559,27 @@ export default class Game extends React.Component {
         }
       });
 
+      // Place the monsters somewhere in the dungeon
+      let location = null;
+      while (!location) {
+        let randomX = Math.floor(Math.random() * levelData.map[0].length);
+        let randomY = Math.floor(Math.random() * levelData.map.length);
+
+        let used = usedLocations.find((loc) => loc.x === randomX && loc.y === randomY);
+        let tile = levelData.map[randomY][randomX];
+        if (levelData.assetInfo[tile].walk && !used) {
+          location = {
+            x: randomX,
+            y: randomY,
+          };
+          usedLocations.push(location);
+        }
+      }
+
       return {
         ...monsterSchema,
+        index,
+        location,
         stats: {
           ...stats,
           health,
@@ -552,7 +597,7 @@ export default class Game extends React.Component {
   }
 
   endCombat = () => {
-    this.setState({gameState: 'dungeon'});
+    this.setState({gameState: 'dungeon', noCombat: true});
   }
 
   goToTown = () => {
@@ -563,18 +608,10 @@ export default class Game extends React.Component {
   getTreasuresForCurrentLevel = () => {
 
   }
-  
-  // TODO: This should generate the level based on the level data
-  generateCurrentLevel = () => {
 
-  }
-
-  // Start a fight with the monster that was touche
-  startFight = () => {
-    // TODO: Remove when can start fights by touching enemies
-    const monstersAvailable = this.state.monstersInLevel;
-    const randomIndex = Math.floor(Math.random() * monstersAvailable.length);
-    const monster = monstersAvailable.splice(randomIndex, 1)[0];
+  // Start a fight with the monster that was touched
+  startFight = (monsterIndex) => {
+    const monster = this.state.monstersInLevel[monsterIndex];
 
     this.setState({
       gameState: 'combat',
@@ -583,7 +620,6 @@ export default class Game extends React.Component {
         ...this.state.hero,
         actionsDisabled: true,
       },
-      monstersInLevel: monstersAvailable,
     });
   }
 
@@ -592,10 +628,7 @@ export default class Game extends React.Component {
   }
 
   render() {
-    const {
-      hero,
-      location,
-    } = this.state;
+    const { hero } = this.state;
 
     return (
       <main className="Main">
@@ -619,6 +652,7 @@ export default class Game extends React.Component {
             gameSlots={this.props.gameSlots}
             changeInventoryOrEquipment={this.changeInventoryOrEquipment}
             learnOrUpgradeSkill={this.learnOrUpgradeSkill}
+            moveTo={this.moveTo}
           />
           <Stats
             heroName={hero.name}

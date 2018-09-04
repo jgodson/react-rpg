@@ -1,0 +1,9 @@
+.Tile {
+  display: inline-block;
+  position: relative;
+}
+
+.Tile * {
+  position: absolute;
+  display: inline-block;
+}

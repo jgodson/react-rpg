@@ -1,4 +1,37 @@
 .DungeonStage {
+  --tile-size: 64px;
+  --stage-height: 398px;
+  --stage-width: 300px;
   height: 100%;
-  min-height: 398px;
+  min-height: var(--stage-height);
+}
+
+.DungeonStage .Tile,
+.DungeonStage .Tile img {
+  width: var(--tile-size);
+  height: var(--tile-size);
+}
+
+.DungeonStage .container {
+  max-height: 398px;
+  overflow: hidden;
+}
+
+.DungeonStage .level {
+  margin: calc(var(--stage-height) / 2 - var(--tile-size) / 2) calc(var(--stage-width) / 2 - var(--tile-size) / 2);
+  transition: transform 200ms linear;
+}
+
+.DungeonStage .row {
+  white-space: nowrap;
+  height: var(--tile-size);
+}
+
+.DungeonStage .object-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--tile-size);
+  height: var(--tile-size);
+  transition: transform 200ms linear;
 }

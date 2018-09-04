@@ -134,7 +134,7 @@ Character.propTypes = {
       mana: PropTypes.number.isRequired,
     }),
   }),
-  action: PropTypes.number.isRequired,
+  action: PropTypes.number,
   show: PropTypes.arrayOf(PropTypes.string),
   tooptip: PropTypes.arrayOf(PropTypes.string),
 };

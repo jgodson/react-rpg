@@ -66,11 +66,7 @@ export default class Equipment extends React.PureComponent {
     return (
       <div className="Equipment">
         <div className="information">
-          <Character
-            character={character}
-            action={0}
-            show={[]}
-          />
+          <Character character={character} show={[]} />
           <Stats
             heroName="Active effects"
             allStats={getEquipmentSummary(character)}

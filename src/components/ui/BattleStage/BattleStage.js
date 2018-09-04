@@ -70,16 +70,16 @@ export default class BattleStage extends React.Component {
     const combatActions = [
       { name: 'Attack', destructive: true, onClick: this.heroAttack },
       {
-        name: 'Magic',
-        destructive: true,
-        disabled: hero.magic.length === 0,
-        onClick: this.showMagic 
-      },
-      {
         name: 'Skills',
         destructive: true,
         disabled: hero.skills.length === 0,
         onClick: this.showSkills
+      },
+      {
+        name: 'Magic',
+        destructive: true,
+        disabled: hero.magic.length === 0,
+        onClick: this.showMagic 
       },
       { name: 'Items', secondary: true, onClick: this.showInventory },
       { name: 'Run', secondary: true, onClick: this.retreat },

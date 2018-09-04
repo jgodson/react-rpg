@@ -23,6 +23,7 @@ import InventoryList from './InventoryList/InventoryList';
 import SkillList from './SkillList/SkillList';
 import Icon from './Icon/Icon';
 import Equipment from './Equipment/Equipment';
+import Tile from './Tile/Tile';
 
 export {
   Game,
@@ -50,4 +51,5 @@ export {
   SkillList,
   Icon,
   Equipment,
+  Tile,
 }
