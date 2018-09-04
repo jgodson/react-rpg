@@ -627,6 +627,13 @@ export default class Game extends React.Component {
     this.props.showMenu(this.state);
   }
 
+  updateLastStageSizes = ({tileSize, stageWidth}) => {
+    this.setState({
+      lastTileSize: tileSize,
+      lastStageWidth: stageWidth, 
+    });
+  }
+
   render() {
     const { hero } = this.state;
 
@@ -653,6 +660,7 @@ export default class Game extends React.Component {
             changeInventoryOrEquipment={this.changeInventoryOrEquipment}
             learnOrUpgradeSkill={this.learnOrUpgradeSkill}
             moveTo={this.moveTo}
+            updateLastStageSizes={this.updateLastStageSizes}
           />
           <Stats
             heroName={hero.name}

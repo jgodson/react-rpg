@@ -80,6 +80,10 @@ export default class DungeonStage extends React.Component {
     this.STAGE_WIDTH = width;
     this.mainElement.current.style.setProperty('--stage-width', `${this.STAGE_WIDTH}px`);
     this.mainElement.current.style.setProperty('--tile-size', `${this.TILE_SIZE}px`);
+    console.log(this.props.game.lastTileSize, this.props.game.lastStageWidth)
+    if (this.TILE_SIZE !== this.props.game.lastTileSize || this.STAGE_WIDTH !== this.props.game.lastStageWidth) {
+      this.props.updateLastStageSizes({tileSize: this.TILE_SIZE, stageWidth: this.STAGE_WIDTH});
+    }
     this.forceUpdate();
   }
 
@@ -338,4 +342,5 @@ DungeonStage.propTypes = {
   heroDie: PropTypes.func.isRequired,
   setAvailableActions: PropTypes.func.isRequired,
   changeInventoryOrEquipment: PropTypes.func.isRequired,
+  updateLastStageSizes: PropTypes.func.isRequired,
 };
