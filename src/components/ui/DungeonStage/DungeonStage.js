@@ -180,6 +180,7 @@ export default class DungeonStage extends React.Component {
   checkSpaceForObjects(x, y) {
     // Check monsters
     const monsterInSpace = this.props.game.monstersInLevel.find((monster) => {
+      if (!monster) { return false; }
       return x === monster.location.x && y === monster.location.y;
     });
     // Check treasures
